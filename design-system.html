@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>있니 · Quiet Pause 디자인 시스템</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    :root {
+      --background: 38 33% 95%;
+      --foreground: 24 10% 10%;
+      --card: 36 40% 98%;
+      --card-foreground: 24 10% 10%;
+      --primary: 20 68% 46%;
+      --primary-foreground: 36 40% 98%;
+      --secondary: 36 18% 92%;
+      --secondary-foreground: 24 10% 16%;
+      --muted: 36 18% 92%;
+      --muted-foreground: 25 8% 42%;
+      --accent: 22 45% 92%;
+      --accent-foreground: 20 68% 32%;
+      --destructive: 0 55% 42%;
+      --destructive-foreground: 0 0% 100%;
+      --border: 32 14% 86%;
+      --input: 32 14% 86%;
+      --ring: 20 68% 46%;
+      --radius: 0.625rem;
+
+      --bg: hsl(var(--background));
+      --fg: hsl(var(--foreground));
+      --paper: hsl(var(--card));
+      --ink: hsl(var(--card-foreground));
+      --brand: hsl(var(--primary));
+      --brand-fg: hsl(var(--primary-foreground));
+      --muted-bg: hsl(var(--muted));
+      --muted-fg: hsl(var(--muted-foreground));
+      --line: hsl(var(--border));
+      --accent-bg: hsl(var(--accent));
+      --accent-fg: hsl(var(--accent-foreground));
+      --danger: hsl(var(--destructive));
+      --swatch-black: #1C1917;
+      --swatch-white: #FAFAF8;
+      --swatch-gray: #8A8580;
+      --swatch-navy: #1E3A5F;
+      --swatch-beige: #D4C4A8;
+      --swatch-other: #C4B5A0;
+      --app-width: 390px;
+      --desk: hsl(32 14% 82%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    a { color: inherit; }
+    button, input, select { font: inherit; }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 100vh;
+    }
+    .nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      border-right: 1px solid var(--line);
+      background: var(--paper);
+      padding: 28px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .nav-brand {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+    .nav-brand span {
+      display: block;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted-fg);
+      margin-top: 4px;
+    }
+    .nav a {
+      display: block;
+      text-decoration: none;
+      font-size: 14px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      color: var(--muted-fg);
+    }
+    .nav a:hover, .nav a.active {
+      background: var(--muted-bg);
+      color: var(--fg);
+    }
+    .nav-links { display: flex; flex-direction: column; gap: 2px; }
+
+    main { padding: 40px 48px 80px; max-width: 1080px; }
+    section { margin-bottom: 72px; }
+    .kicker {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--brand);
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    h1.page-title { font-size: 28px; font-weight: 600; line-height: 1.3; margin-bottom: 8px; }
+    .lede { color: var(--muted-fg); max-width: 42rem; margin-bottom: 28px; }
+    h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+    .section-desc { color: var(--muted-fg); margin-bottom: 20px; font-size: 14px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .stack { display: flex; flex-direction: column; gap: 12px; }
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+    .token-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .token-swatch { height: 72px; }
+    .token-meta { padding: 12px 14px; }
+    .token-meta strong { display: block; font-size: 13px; }
+    .token-meta code { font-size: 11px; color: var(--muted-fg); font-family: ui-monospace, Menlo, monospace; }
+
+    .type-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 16px;
+      align-items: baseline;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .type-row:last-child { border-bottom: 0; }
+    .type-meta { font-size: 12px; color: var(--muted-fg); }
+
+    .canvas {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 40px;
+      padding: 0 16px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1;
+    }
+    .btn:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary { background: var(--brand); color: var(--brand-fg); }
+    .btn-outline { background: transparent; border-color: var(--line); color: var(--fg); }
+    .btn-secondary { background: var(--muted-bg); color: hsl(var(--secondary-foreground)); }
+    .btn-ghost { background: transparent; color: var(--muted-fg); }
+    .btn-ghost.danger { color: var(--danger); }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+    .btn-block { width: 100%; }
+
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1;
+    }
+    .badge-outline { border: 1px solid var(--line); color: var(--fg); }
+    .badge-muted { background: var(--muted-bg); color: var(--muted-fg); }
+    .badge-skip { background: var(--accent-bg); color: var(--accent-fg); }
+
+    .alert {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: 14px;
+      background: var(--paper);
+    }
+    .alert strong { display: block; font-size: 14px; margin-bottom: 2px; }
+    .alert p { color: var(--muted-fg); font-size: 13px; }
+    .alert-overlap {
+      background: var(--accent-bg);
+      border-color: transparent;
+      border-left: 4px solid var(--brand);
+    }
+    .alert-overlap strong { color: var(--accent-fg); }
+    .alert-danger {
+      background: hsl(0 55% 42% / 0.08);
+      border-color: hsl(0 55% 42% / 0.25);
+    }
+    .alert-danger strong { color: var(--danger); }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; font-weight: 500; }
+    .field input, .field select, .field textarea {
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      color: var(--fg);
+    }
+    .field textarea { height: auto; padding: 10px 12px; resize: vertical; }
+    .field input:focus, .field select:focus {
+      outline: 2px solid hsl(var(--ring));
+      outline-offset: 0;
+    }
+    .field .error { color: var(--danger); font-size: 13px; }
+    .field.invalid input { border-color: var(--danger); }
+
+    .chip {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted-fg);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .chip.on { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+    .tab {
+      background: none;
+      border: 0;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: var(--muted-fg);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tab.on { color: var(--fg); font-weight: 600; border-bottom-color: var(--fg); }
+
+    .want-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: inherit;
+    }
+    .want-card:hover { border-color: hsl(32 14% 76%); }
+    .want-card .meta { flex: 1; min-width: 0; }
+    .want-card h4 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+    .want-card .sub { font-size: 13px; color: var(--muted-fg); display: flex; align-items: center; gap: 6px; }
+    .want-card .price { font-size: 13px; color: var(--muted-fg); white-space: nowrap; }
+
+    .dot {
+      width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid transparent;
+    }
+    .dot.white { background: var(--swatch-white); border-color: var(--line); }
+    .dot.black { background: var(--swatch-black); }
+    .dot.gray { background: var(--swatch-gray); }
+    .dot.navy { background: var(--swatch-navy); }
+    .dot.beige { background: var(--swatch-beige); }
+    .dot.other {
+      background: repeating-linear-gradient(-45deg, var(--swatch-other), var(--swatch-other) 3px, #efe8dc 3px, #efe8dc 6px);
+    }
+    .hint-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+
+    .empty {
+      text-align: center;
+      padding: 48px 16px;
+    }
+    .empty .mark {
+      width: 36px; height: 36px; margin: 0 auto 12px;
+      border: 1.5px solid var(--line); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted-fg); font-size: 18px;
+    }
+    .empty h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .empty p { font-size: 13px; color: var(--muted-fg); margin-bottom: 16px; }
+
+    .desk-demo {
+      background: var(--desk);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      min-height: 560px;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 0;
+      overflow: hidden;
+    }
+    .app-shell {
+      width: var(--app-width);
+      max-width: 100%;
+      min-height: 560px;
+      background: var(--bg);
+      border-inline: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+    }
+    .phone {
+      width: var(--app-width);
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 0;
+      overflow: hidden;
+      min-height: 640px;
+      display: flex;
+      flex-direction: column;
+    }
+    .phone-bar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .phone-bar .links { display: flex; gap: 12px; font-size: 13px; font-weight: 400; color: var(--muted-fg); }
+    .phone-body { padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+    .phone-title { font-size: 24px; font-weight: 600; line-height: 1.3; }
+    .screens { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 8px; }
+    .screen-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .screen-label { font-size: 12px; color: var(--muted-fg); }
+
+    .do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .do, .dont {
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 14px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+    }
+    .do { border-top: 3px solid var(--brand); }
+    .dont { border-top: 3px solid var(--danger); }
+    .do b, .dont b { display: block; margin-bottom: 6px; font-size: 13px; }
+
+    table.tokens {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    table.tokens th, table.tokens td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    table.tokens th { font-weight: 500; color: var(--muted-fg); background: var(--muted-bg); }
+    table.tokens tr:last-child td { border-bottom: 0; }
+
+    .footer-note { font-size: 13px; color: var(--muted-fg); }
+
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; }
+      .nav { position: relative; height: auto; flex-direction: row; flex-wrap: wrap; }
+      .nav-links { flex-direction: row; flex-wrap: wrap; }
+      main { padding: 28px 20px 64px; }
+      .grid-2, .grid-3, .grid-4, .do-dont { grid-template-columns: 1fr; }
+      .type-row { grid-template-columns: 1fr; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="nav">
+      <div class="nav-brand">
+        있니
+        <span>Quiet Pause · v1.1 · 390px</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#principles">원칙</a>
+        <a href="#shell">앱 셸</a>
+        <a href="#color">컬러</a>
+        <a href="#type">타이포</a>
+        <a href="#components">컴포넌트</a>
+        <a href="#screens">화면</a>
+        <a href="#copy">카피</a>
+        <a href="app-preview.html">앱처럼 보기</a>
+      </nav>
+    </aside>
+
+    <main>
+      <header>
+        <p class="kicker">DESIGN.md · 미리보기</p>
+        <h1 class="page-title">결제 직전의 10초</h1>
+        <p class="lede">
+          있니는 옷장 갤러리가 아닙니다. 종이 메모와 체크리스트처럼 보이게 하고,
+          테라코타는 겹침과 “안 샀다”에만 씁니다. 레이아웃은 처음부터 390px 모바일 셸입니다.
+          PC로 열어도 가운데 컬럼만 보입니다.
+        </p>
+      </header>
+
+      <section id="principles">
+        <h2>원칙</h2>
+        <p class="section-desc">한 화면에 할 일 하나. 겹침 Alert가 유일한 드라마.</p>
+        <div class="do-dont">
+          <div class="do">
+            <b>한다</b>
+            글 + 색 스와치로 옷을 가리킨다. 여백으로 속도를 늦춘다. 어떤 기기든 390px 앱 폭만.
+          </div>
+          <div class="dont">
+            <b>하지 않는다</b>
+            상품 사진 그리드, PC 2열, sm/md 레이아웃 분기, 폰 베젤 장식, 장바구니처럼 가격을 가장 크게.
+          </div>
+        </div>
+      </section>
+
+      <section id="shell">
+        <h2>앱 셸</h2>
+        <p class="section-desc">
+          앱 폭 390px, 높이 100dvh. PC는 바깥을 desk 색으로 두고 가운데만 앱이다.
+          <a href="app-preview.html" style="color:var(--brand);">전체 화면으로 보기 →</a>
+        </p>
+        <div class="desk-demo">
+          <div class="app-shell">
+            <div class="phone-bar">있니 <span class="links"><span>보유</span><span>로그아웃</span></span></div>
+            <div class="phone-body">
+              <div class="phone-title">살까</div>
+              <div class="tabs">
+                <button class="tab on">진행 중</button>
+                <button class="tab">샀다</button>
+                <button class="tab">안 샀다</button>
+              </div>
+              <div class="row">
+                <button class="chip on">전체</button>
+                <button class="chip">상의</button>
+                <button class="chip">아우터</button>
+              </div>
+              <a class="want-card" href="app-preview.html">
+                <span class="dot black"></span>
+                <div class="meta">
+                  <h4>블랙 니트</h4>
+                  <div class="sub"><span class="hint-dot"></span> 집에 있음</div>
+                </div>
+                <span class="badge badge-outline">진행 중</span>
+              </a>
+              <a class="want-card" href="app-preview.html">
+                <span class="dot navy"></span>
+                <div class="meta">
+                  <h4>네이비 셔츠</h4>
+                  <div class="sub">상의</div>
+                </div>
+                <span class="badge badge-outline">진행 중</span>
+              </a>
+              <button class="btn btn-primary btn-block" onclick="location.href='app-preview.html'">후보 추가</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="color">
+        <h2>컬러</h2>
+        <p class="section-desc">배경은 순백이 아니라 따뜻한 종이. Primary는 CTA와 겹침에만.</p>
+        <div class="grid-4" style="margin-bottom: 20px;">
+          <div class="token-card">
+            <div class="token-swatch" style="background: hsl(38 33% 95%); border-bottom: 1px solid var(--line);"></div>
+            <div class="token-meta"><strong>background</strong><code>#F6F3EE · 38 33% 95%</code></div>
+          </div>
+          <div class="token-card">
+            <div class="token-swatch" style="background: #1C1917;"></div>
+            <div class="token-meta"><strong>foreground</strong><code>#1C1917 · 24 10% 10%</code></div>
+          </div>
+          <div class="token-card">
+            <div class="token-swatch" style="background: #C45C26;"></div>
+            <div class="token-meta"><strong>primary</strong><code>#C45C26 · 20 68% 46%</code></div>
+          </div>
+          <div class="token-card">
+            <div class="token-swatch" style="background: hsl(22 45% 92%);"></div>
+            <div class="token-meta"><strong>accent (겹침)</strong><code>22 45% 92%</code></div>
+          </div>
+          <div class="token-card">
+            <div class="token-swatch" style="background: hsl(36 40% 98%); border-bottom: 1px solid var(--line);"></div>
+            <div class="token-meta"><strong>card</strong><code>36 40% 98%</code></div>
+          </div>
+          <div class="token-card">
+            <div class="token-swatch" style="background: hsl(36 18% 92%);"></div>
+            <div class="token-meta"><strong>muted / secondary</strong><code>36 18% 92%</code></div>
+          </div>
+          <div class="token-card">
+            <div class="token-swatch" style="background: hsl(0 55% 42%);"></div>
+            <div class="token-meta"><strong>destructive</strong><code>0 55% 42%</code></div>
+          </div>
+          <div class="token-card">
+            <div class="token-swatch" style="background: hsl(32 14% 86%);"></div>
+            <div class="token-meta"><strong>border</strong><code>32 14% 86%</code></div>
+          </div>
+        </div>
+
+        <h3>옷 색 스와치</h3>
+        <p class="section-desc">12–16px 원 + 한글 라벨. 흰 원은 보더 필수.</p>
+        <div class="row" style="margin-bottom: 8px;">
+          <span class="row"><span class="dot black"></span> 블랙</span>
+          <span class="row"><span class="dot white"></span> 화이트</span>
+          <span class="row"><span class="dot gray"></span> 그레이</span>
+          <span class="row"><span class="dot navy"></span> 네이비</span>
+          <span class="row"><span class="dot beige"></span> 베이지</span>
+          <span class="row"><span class="dot other"></span> 기타</span>
+        </div>
+      </section>
+
+      <section id="type">
+        <h2>타이포그래피</h2>
+        <p class="section-desc">Pretendard. 얇은 세리프·올캡스 로고 없음.</p>
+        <div class="canvas">
+          <div class="type-row">
+            <div class="type-meta">앱 이름 · 20/600</div>
+            <div style="font-size:20px;font-weight:600;line-height:1.3;">있니</div>
+          </div>
+          <div class="type-row">
+            <div class="type-meta">화면 제목 · 24/600</div>
+            <div style="font-size:24px;font-weight:600;line-height:1.3;">살까 싶은 옷</div>
+          </div>
+          <div class="type-row">
+            <div class="type-meta">카드 제목 · 16/600</div>
+            <div style="font-size:16px;font-weight:600;line-height:1.4;">블랙 니트</div>
+          </div>
+          <div class="type-row">
+            <div class="type-meta">본문 · 15/400</div>
+            <div>이름, 카테고리, 색만 있으면 됩니다.</div>
+          </div>
+          <div class="type-row">
+            <div class="type-meta">보조 · 13/400</div>
+            <div style="font-size:13px;color:var(--muted-fg);">서버 없는 실습 로그인입니다.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="components">
+        <h2>컴포넌트</h2>
+        <p class="section-desc">shadcn 변형만. 안 샀다 = primary, 샀다 = outline.</p>
+
+        <div class="stack" style="gap: 28px;">
+          <div>
+            <h3>Button</h3>
+            <div class="canvas stack">
+              <div class="row">
+                <button class="btn btn-primary">후보 추가</button>
+                <button class="btn btn-outline">샀다</button>
+                <button class="btn btn-primary">안 샀다</button>
+                <button class="btn btn-secondary">집에 이런 거 있음</button>
+                <button class="btn btn-ghost danger">삭제</button>
+                <button class="btn btn-ghost btn-sm">로그아웃</button>
+              </div>
+              <div class="row">
+                <button class="btn btn-primary" disabled><span class="spinner"></span> 넣는 중</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3>Badge</h3>
+            <div class="canvas row">
+              <span class="badge badge-outline">진행 중</span>
+              <span class="badge badge-muted">샀다</span>
+              <span class="badge badge-skip">안 샀다</span>
+              <span class="badge badge-muted">상의</span>
+            </div>
+          </div>
+
+          <div>
+            <h3>Alert</h3>
+            <div class="stack">
+              <div class="alert alert-overlap">
+                <strong>집에 비슷한 옷 2개</strong>
+                <p>블랙 니트 · 검정 목폴라</p>
+              </div>
+              <div class="alert">
+                <strong>실습용이에요. 서버는 없습니다.</strong>
+                <p>비밀번호는 이 브라우저에만 남습니다.</p>
+              </div>
+              <div class="alert alert-danger">
+                <strong>저장하지 못했습니다.</strong>
+                <p>다시 시도해 주세요.</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3>Form</h3>
+            <div class="canvas" style="max-width: 400px;">
+              <p style="font-size:13px;color:var(--muted-fg);margin-bottom:14px;">이름, 카테고리, 색만 있으면 됩니다.</p>
+              <div class="stack">
+                <div class="field invalid">
+                  <label>이름</label>
+                  <input placeholder="예: 블랙 니트" />
+                  <span class="error">이름을 적어 주세요</span>
+                </div>
+                <div class="field">
+                  <label>카테고리</label>
+                  <select><option>상의</option><option>하의</option><option>아우터</option></select>
+                </div>
+                <div class="field">
+                  <label>색</label>
+                  <select><option>블랙</option><option>화이트</option><option>네이비</option></select>
+                </div>
+                <button class="btn btn-primary btn-block">넣기</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3>Want 카드</h3>
+            <div class="stack" style="max-width: 440px;">
+              <a class="want-card" href="#screens">
+                <span class="dot black"></span>
+                <div class="meta">
+                  <h4>블랙 니트</h4>
+                  <div class="sub"><span class="hint-dot"></span> 집에 있음 · 상의</div>
+                </div>
+                <span class="badge badge-outline">진행 중</span>
+                <span class="price">48,000원</span>
+              </a>
+              <a class="want-card" href="#screens">
+                <span class="dot beige"></span>
+                <div class="meta">
+                  <h4>베이지 트렌치</h4>
+                  <div class="sub">아우터</div>
+                </div>
+                <span class="badge badge-skip">안 샀다</span>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h3>Empty</h3>
+            <div class="canvas" style="max-width: 440px;">
+              <div class="empty">
+                <div class="mark">?</div>
+                <h4>살까 싶은 옷을 넣어 보세요</h4>
+                <p>지금 장바구니에 있는 것 1개면 됩니다.</p>
+                <button class="btn btn-primary">후보 추가</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3>Tabs · 칩</h3>
+            <div class="canvas stack">
+              <div class="tabs">
+                <button class="tab on">진행 중</button>
+                <button class="tab">샀다</button>
+                <button class="tab">안 샀다</button>
+              </div>
+              <div class="row">
+                <button class="chip on">전체</button>
+                <button class="chip">상의</button>
+                <button class="chip">하의</button>
+                <button class="chip">아우터</button>
+                <button class="chip">신발</button>
+                <button class="chip">가방</button>
+                <button class="chip">기타</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="screens">
+        <h2>화면</h2>
+        <p class="section-desc">실제 앱은 390px 셸 하나. 아래는 화면별 구성. PC 접속 모습은 <a href="app-preview.html" style="color:var(--brand);">앱처럼 보기</a>.</p>
+        <div class="screens">
+
+          <div class="screen-wrap">
+            <span class="screen-label">/login</span>
+            <div class="phone">
+              <div class="phone-body" style="justify-content:center;">
+                <div style="text-align:center;margin-bottom:8px;">
+                  <div style="font-size:20px;font-weight:600;">있니</div>
+                  <div style="font-size:13px;color:var(--muted-fg);">집에 비슷한 옷 있니?</div>
+                </div>
+                <div class="alert">
+                  <strong>실습용이에요. 서버는 없습니다.</strong>
+                  <p>비밀번호는 이 브라우저에만 남습니다.</p>
+                </div>
+                <div class="field">
+                  <label>이메일</label>
+                  <input value="cho@example.com" readonly />
+                </div>
+                <div class="field">
+                  <label>비밀번호</label>
+                  <input type="password" value="••••••••" readonly />
+                </div>
+                <button class="btn btn-primary btn-block">로그인</button>
+                <p style="text-align:center;font-size:13px;color:var(--muted-fg);">계정이 없나요? 회원가입</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="screen-wrap">
+            <span class="screen-label">/ 홈</span>
+            <div class="phone">
+              <div class="phone-bar">있니 <span class="links"><span>보유</span><span>로그아웃</span></span></div>
+              <div class="phone-body">
+                <div class="phone-title">살까</div>
+                <div class="tabs">
+                  <button class="tab on">진행 중</button>
+                  <button class="tab">샀다</button>
+                  <button class="tab">안 샀다</button>
+                </div>
+                <div class="row">
+                  <button class="chip on">전체</button>
+                  <button class="chip">상의</button>
+                  <button class="chip">아우터</button>
+                </div>
+                <a class="want-card" href="#">
+                  <span class="dot black"></span>
+                  <div class="meta">
+                    <h4>블랙 니트</h4>
+                    <div class="sub"><span class="hint-dot"></span> 집에 있음</div>
+                  </div>
+                  <span class="badge badge-outline">진행 중</span>
+                </a>
+                <a class="want-card" href="#">
+                  <span class="dot navy"></span>
+                  <div class="meta">
+                    <h4>네이비 셔츠</h4>
+                    <div class="sub">상의</div>
+                  </div>
+                  <span class="badge badge-outline">진행 중</span>
+                </a>
+                <button class="btn btn-primary btn-block">후보 추가</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="screen-wrap">
+            <span class="screen-label">/ 홈 · empty</span>
+            <div class="phone">
+              <div class="phone-bar">있니 <span class="links"><span>보유</span><span>로그아웃</span></span></div>
+              <div class="phone-body">
+                <div class="phone-title">살까</div>
+                <div class="tabs">
+                  <button class="tab on">진행 중</button>
+                  <button class="tab">샀다</button>
+                  <button class="tab">안 샀다</button>
+                </div>
+                <div class="empty" style="padding-top:72px;">
+                  <div class="mark">?</div>
+                  <h4>살까 싶은 옷을 넣어 보세요</h4>
+                  <p>지금 장바구니에 있는 것 1개면 됩니다.</p>
+                  <button class="btn btn-primary">후보 추가</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="screen-wrap">
+            <span class="screen-label">/wants/new</span>
+            <div class="phone">
+              <div class="phone-bar">있니 <span class="links"><span>취소</span></span></div>
+              <div class="phone-body">
+                <div class="phone-title">살까 싶은 옷</div>
+                <p style="font-size:13px;color:var(--muted-fg);margin-top:-8px;">이름, 카테고리, 색만 있으면 됩니다.</p>
+                <div class="alert alert-overlap">
+                  <strong>집에 비슷한 옷 2개</strong>
+                  <p>블랙 니트 · 검정 목폴라</p>
+                </div>
+                <div class="field">
+                  <label>이름</label>
+                  <input value="블랙 니트" readonly />
+                </div>
+                <div class="field">
+                  <label>카테고리</label>
+                  <select><option>상의</option></select>
+                </div>
+                <div class="field">
+                  <label>색</label>
+                  <select><option>블랙</option></select>
+                </div>
+                <button class="btn btn-primary btn-block">넣기</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="screen-wrap">
+            <span class="screen-label">/wants/:id</span>
+            <div class="phone">
+              <div class="phone-bar">있니 <span class="links"><span>뒤로</span></span></div>
+              <div class="phone-body">
+                <div class="alert alert-overlap">
+                  <strong>집에 비슷한 옷 2개</strong>
+                  <p>블랙 니트 · 검정 목폴라</p>
+                </div>
+                <div class="row">
+                  <span class="dot black"></span>
+                  <span class="badge badge-muted">상의</span>
+                  <span class="badge badge-outline">진행 중</span>
+                </div>
+                <div class="phone-title">블랙 니트</div>
+                <p style="font-size:13px;color:var(--muted-fg);margin-top:-10px;">48,000원</p>
+                <div class="field">
+                  <label>집에 이런 거 있음</label>
+                  <input placeholder="예: 검정 목폴라" />
+                </div>
+                <button class="btn btn-secondary btn-block">한 줄 추가</button>
+                <div class="row" style="margin-top:4px;">
+                  <button class="btn btn-outline" style="flex:1;">샀다</button>
+                  <button class="btn btn-primary" style="flex:1;">안 샀다</button>
+                </div>
+                <button class="btn btn-ghost danger btn-block">이 후보 삭제</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="screen-wrap">
+            <span class="screen-label">/owns</span>
+            <div class="phone">
+              <div class="phone-bar">있니 <span class="links"><span>살까</span><span>로그아웃</span></span></div>
+              <div class="phone-body">
+                <div class="phone-title">집에 있는 것</div>
+                <p style="font-size:13px;color:var(--muted-fg);margin-top:-8px;">옷장 전체를 올리지 않아도 됩니다.</p>
+                <a class="want-card" href="#">
+                  <span class="dot black"></span>
+                  <div class="meta">
+                    <h4>블랙 니트</h4>
+                    <div class="sub">상의 · 샀을 때</div>
+                  </div>
+                </a>
+                <a class="want-card" href="#">
+                  <span class="dot black"></span>
+                  <div class="meta">
+                    <h4>검정 목폴라</h4>
+                    <div class="sub">상의 · 직접 적음</div>
+                  </div>
+                </a>
+                <a class="want-card" href="#">
+                  <span class="dot beige"></span>
+                  <div class="meta">
+                    <h4>베이지 코트</h4>
+                    <div class="sub">아우터 · 직접 적음</div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section id="copy">
+        <h2>카피</h2>
+        <p class="section-desc">구어체. 등록·아이템·closet 대신 살까 / 집에 / 있니.</p>
+        <table class="tokens">
+          <thead>
+            <tr><th>상황</th><th>쓴다</th><th>안 쓴다</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>empty</td><td>살까 싶은 옷을 넣어 보세요</td><td>아직 아이템이 없습니다</td></tr>
+            <tr><td>겹침</td><td>집에 비슷한 옷 2개</td><td>중복 감지됨</td></tr>
+            <tr><td>성공</td><td>안 샀다로 남겼어요</td><td>스킵 완료</td></tr>
+            <tr><td>보유 추가</td><td>집에 이런 거 있음</td><td>보유 의류 등록</td></tr>
+            <tr><td>로그인</td><td>실습용이에요. 서버는 없습니다</td><td>Warning: localStorage auth</td></tr>
+          </tbody>
+        </table>
+        <p class="footer-note" style="margin-top:24px;">토큰이 바뀌면 DESIGN.md와 이 파일을 같이 고칩니다. 구현은 shadcn index.css에 2.1 토큰을 넣는 것부터.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const chips = document.querySelectorAll(".chip");
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const group = chip.parentElement;
+        if (!group) return;
+        group.querySelectorAll(".chip").forEach((c) => c.classList.remove("on"));
+        chip.classList.add("on");
+      });
+    });
+    const tabs = document.querySelectorAll(".tabs");
+    tabs.forEach((bar) => {
+      bar.querySelectorAll(".tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          bar.querySelectorAll(".tab").forEach((t) => t.classList.remove("on"));
+          tab.classList.add("on");
+        });
+      });
+    });
+  </script>
+</body>
+</html>
