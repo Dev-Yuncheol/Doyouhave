@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useMemo, useState, useSyncExternalStore } from "react"
 import { toast } from "sonner"
 import { wait } from "@/lib/delay"
 import { useSession } from "@/hooks/useSession"
@@ -7,6 +7,8 @@ import {
   createOwn as saveOwn,
   deleteOwn as removeOwn,
   getOwns as readOwns,
+  getVersion,
+  subscribe,
   updateOwn as patchOwn,
 } from "@/lib/storage"
 
@@ -15,32 +17,24 @@ const SAVE_ERROR = "저장하지 못했습니다. 다시 시도해 주세요."
 export function useOwns({ category, color } = {}) {
   const { session } = useSession()
   const userId = session?.userId
-  const [tick, setTick] = useState(0)
   const [saving, setSaving] = useState(false)
-
-  const refresh = useCallback(() => {
-    setTick((value) => value + 1)
-  }, [])
+  const version = useSyncExternalStore(subscribe, getVersion, getVersion)
 
   const owns = useMemo(() => {
     if (!userId) return []
-    void tick
     return readOwns({ userId, category, color })
-  }, [userId, category, color, tick])
+  }, [userId, category, color, version])
 
   const allOwns = useMemo(() => {
     if (!userId) return []
-    void tick
     return readOwns({ userId })
-  }, [userId, tick])
+  }, [userId, version])
 
   async function run(action) {
     setSaving(true)
     try {
       await wait(300)
-      const result = action()
-      refresh()
-      return result
+      return action()
     } catch (error) {
       toast.error(SAVE_ERROR)
       throw error
@@ -53,7 +47,6 @@ export function useOwns({ category, color } = {}) {
     owns,
     allOwns,
     saving,
-    refresh,
     similar: (query) => findSimilarOwns(allOwns, query),
     createOwn(payload) {
       return run(() => saveOwn({ ...payload, userId }))

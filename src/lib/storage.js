@@ -18,9 +18,39 @@ export function readList(key) {
   }
 }
 
+const listeners = new Set()
+let version = 0
+
+function notify() {
+  version += 1
+  listeners.forEach((listener) => listener())
+}
+
+function onStorage() {
+  notify()
+}
+
+export function subscribe(listener) {
+  listeners.add(listener)
+  if (listeners.size === 1) {
+    window.addEventListener("storage", onStorage)
+  }
+  return () => {
+    listeners.delete(listener)
+    if (listeners.size === 0) {
+      window.removeEventListener("storage", onStorage)
+    }
+  }
+}
+
+export function getVersion() {
+  return version
+}
+
 export function writeList(key, list) {
   try {
     localStorage.setItem(key, JSON.stringify(list))
+    notify()
   } catch {
     throw new Error("SAVE_FAILED")
   }
