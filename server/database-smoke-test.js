@@ -201,6 +201,36 @@ try {
     .set("Authorization", `Bearer ${token}`)
   assert.equal(deletedManualOwn.status, 204)
 
+  const cascadeWant = await api
+    .post("/api/wants")
+    .set("Authorization", `Bearer ${token}`)
+    .send({ title: "cascade want", category: "outer", color: "black" })
+  const cascadeOwn = await api
+    .post("/api/owns")
+    .set("Authorization", `Bearer ${token}`)
+    .send({ title: "cascade own", category: "top", color: "white" })
+  assert.equal(cascadeWant.status, 201)
+  assert.equal(cascadeOwn.status, 201)
+
+  const deletedAccount = await api
+    .delete("/api/auth/me")
+    .set("Authorization", `Bearer ${token}`)
+  assert.equal(deletedAccount.status, 204)
+
+  const cascadeState = await prisma.user.findUnique({
+    where: { id: storedUser.id },
+    include: { wants: true, owns: true },
+  })
+  assert.equal(cascadeState, null)
+  assert.equal(
+    await prisma.want.count({ where: { id: cascadeWant.body.want.id } }),
+    0,
+  )
+  assert.equal(
+    await prisma.own.count({ where: { id: cascadeOwn.body.own.id } }),
+    0,
+  )
+
   console.log("Database authentication and CRUD smoke test passed.")
 } finally {
   await prisma.user.deleteMany({ where: { email: { in: [email, otherEmail] } } })

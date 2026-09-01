@@ -58,57 +58,73 @@ export function createAuthRouter({
   jwtSecret,
   bcryptRounds,
   passwordService = bcrypt,
+  rateLimiters,
 }) {
   const router = Router()
   const authenticate = createAuthenticate({ database, jwtSecret })
 
-  router.post("/signup", validateBody(signupSchema), async (request, response) => {
-    const { email, password } = request.validatedBody
-    const existingUser = await database.user.findUnique({ where: { email } })
+  router.post(
+    "/signup",
+    rateLimiters.signup,
+    validateBody(signupSchema),
+    async (request, response) => {
+      const { email, password } = request.validatedBody
+      const existingUser = await database.user.findUnique({ where: { email } })
 
-    if (existingUser) {
-      throw new AppError(
-        409,
-        "EMAIL_CONFLICT",
-        "이미 가입된 이메일입니다.",
-      )
-    }
-
-    const passwordHash = await passwordService.hash(password, bcryptRounds)
-
-    let user
-    try {
-      user = await database.user.create({
-        data: { email, passwordHash },
-        select: publicUserSelect,
-      })
-    } catch (error) {
-      if (error?.code === "P2002") {
+      if (existingUser) {
         throw new AppError(
           409,
           "EMAIL_CONFLICT",
           "이미 가입된 이메일입니다.",
         )
       }
-      throw error
-    }
 
-    response.status(201).json(authResponse(user, jwtSecret))
-  })
+      const passwordHash = await passwordService.hash(password, bcryptRounds)
 
-  router.post("/login", validateBody(loginSchema), async (request, response) => {
-    const { email, password } = request.validatedBody
-    const user = await database.user.findUnique({ where: { email } })
+      let user
+      try {
+        user = await database.user.create({
+          data: { email, passwordHash },
+          select: publicUserSelect,
+        })
+      } catch (error) {
+        if (error?.code === "P2002") {
+          throw new AppError(
+            409,
+            "EMAIL_CONFLICT",
+            "이미 가입된 이메일입니다.",
+          )
+        }
+        throw error
+      }
 
-    if (!user || !(await passwordService.compare(password, user.passwordHash))) {
-      throw invalidCredentials()
-    }
+      response.status(201).json(authResponse(user, jwtSecret))
+    },
+  )
 
-    response.json(authResponse(user, jwtSecret))
-  })
+  router.post(
+    "/login",
+    rateLimiters.login,
+    validateBody(loginSchema),
+    async (request, response) => {
+      const { email, password } = request.validatedBody
+      const user = await database.user.findUnique({ where: { email } })
+
+      if (!user || !(await passwordService.compare(password, user.passwordHash))) {
+        throw invalidCredentials()
+      }
+
+      response.json(authResponse(user, jwtSecret))
+    },
+  )
 
   router.get("/me", authenticate, (request, response) => {
     response.json({ user: serializeUser(request.user) })
+  })
+
+  router.delete("/me", authenticate, async (request, response) => {
+    await database.user.delete({ where: { id: request.user.id } })
+    response.status(204).end()
   })
 
   return router

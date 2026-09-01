@@ -21,6 +21,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { ColorSwatch } from "@/components/ColorSwatch"
 import { SimilarOwns } from "@/components/SimilarOwns"
 import { CATEGORIES, COLORS } from "@/lib/constants"
+import { getPriceError, MAX_PRICE } from "@/lib/price"
 
 const EMPTY = {
   title: "",
@@ -81,9 +82,7 @@ export function WantForm({ findSimilar, saving, onSubmit, onCancel }) {
     if (values.color === "other" && !values.colorDetail.trim()) {
       next.colorDetail = "색 이름을 적어 주세요"
     }
-    if (values.price !== "" && Number.isNaN(Number(values.price))) {
-      next.price = "가격을 숫자로 적어 주세요"
-    }
+    next.price = getPriceError(values.price)
     setErrors(next)
     return Object.keys(next).length === 0
   }
@@ -106,7 +105,7 @@ export function WantForm({ findSimilar, saving, onSubmit, onCancel }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       {previewOwns.length > 0 ? <SimilarOwns owns={previewOwns} /> : null}
 
       <FieldGroup className="gap-4">
@@ -234,6 +233,10 @@ export function WantForm({ findSimilar, saving, onSubmit, onCancel }) {
           <FieldLabel htmlFor="want-price">가격</FieldLabel>
           <Input
             id="want-price"
+            type="number"
+            min="0"
+            max={String(MAX_PRICE)}
+            step="1"
             inputMode="numeric"
             placeholder="선택"
             value={values.price}

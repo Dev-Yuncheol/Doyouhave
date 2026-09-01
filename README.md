@@ -28,7 +28,7 @@
 
 ## 로컬 실행
 
-요구 사항은 Node.js 20 이상과 PostgreSQL 데이터베이스입니다.
+요구 사항은 Node.js `^20.19.0 || >=22.12.0`과 PostgreSQL 데이터베이스입니다.
 
 ```powershell
 npm install
@@ -72,13 +72,14 @@ Vite가 출력한 주소를 브라우저에서 열고, API 상태는 `http://loc
 ## API 요약
 
 인증이 필요한 API는 `Authorization: Bearer <JWT>` 헤더를 사용합니다.
+회원가입은 클라이언트 IP별 15분에 5회, 로그인은 별도로 15분에 10회로 제한되며 초과 시 JSON 429 응답을 반환합니다.
 
 | Method | Path | 설명 |
 |---|---|---|
-| `GET` | `/api/health` | 상태 확인 |
+| `GET` | `/api/health` | API 및 DB 연결 상태 확인 |
 | `POST` | `/api/auth/signup` | 회원가입 |
 | `POST` | `/api/auth/login` | 로그인 |
-| `GET` | `/api/auth/me` | 현재 사용자 |
+| `GET`, `DELETE` | `/api/auth/me` | 현재 사용자 조회·본인 계정 삭제 |
 | `GET`, `POST` | `/api/wants` | 구매 후보 목록·생성 |
 | `GET`, `PATCH`, `DELETE` | `/api/wants/:id` | 구매 후보 상세·수정·삭제 |
 | `POST` | `/api/wants/:id/buy` | 구매 완료 및 보유 의류 생성 |
@@ -91,6 +92,9 @@ Vite가 출력한 주소를 브라우저에서 열고, API 상태는 `http://loc
 
 - 회원가입 이메일 정규화, 비밀번호 해시, 중복/경합 처리
 - 로그인 성공/실패, JWT 복원과 잘못된 토큰 처리
+- 회원가입·로그인의 독립된 IP별 요청 제한과 JSON 429 응답
+- 본인 계정 삭제와 구매 후보·보유 의류 cascade 삭제
+- 실제 DB 연결을 확인하는 health check와 안전한 503 응답
 - 인증 없는 데이터 접근 차단
 - 후보·보유 생성, 조회 필터, 수정, 삭제
 - 사용자별 리소스 격리와 404 처리
@@ -118,7 +122,7 @@ npx vercel deploy --prod
 
 배포 후 다음 주소를 확인합니다.
 
-- `/api/health`: `{ "status": "ok" }`
+- `/api/health`: DB 연결이 정상이면 `{ "status": "ok", "database": "ok" }`, 연결 실패 시 503과 `{ "status": "unavailable", "database": "error" }`
 - `/api/docs`: Swagger UI
 - `/`: 랜딩과 로그인/회원가입
 

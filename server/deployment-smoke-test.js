@@ -1,6 +1,5 @@
 import assert from "node:assert/strict"
 import { randomUUID } from "node:crypto"
-import { prisma } from "./lib/prisma.js"
 
 const baseUrl = (process.argv[2] || "").replace(/\/$/, "")
 
@@ -37,7 +36,7 @@ function assertStatus(result, expected, label) {
 try {
   const health = await api("/api/health")
   assert.equal(health.response.status, 200)
-  assert.deepEqual(health.payload, { status: "ok" })
+  assert.deepEqual(health.payload, { status: "ok", database: "ok" })
 
   const specification = await api("/api/openapi.json")
   assert.equal(specification.response.status, 200)
@@ -49,8 +48,8 @@ try {
     body: { email, password },
   })
   assert.equal(signup.response.status, 201)
-  assert.equal(signup.payload.user.email, email)
   token = signup.payload.token
+  assert.equal(signup.payload.user.email, email)
 
   const me = await api("/api/auth/me")
   assert.equal(me.response.status, 200)
@@ -99,6 +98,8 @@ try {
 
   console.log(`Production API smoke test passed: ${baseUrl}`)
 } finally {
-  await prisma.user.deleteMany({ where: { email } })
-  await prisma.$disconnect()
+  if (token) {
+    const cleanup = await api("/api/auth/me", { method: "DELETE" })
+    assertStatus(cleanup, 204, "Deployment smoke-test account cleanup failed")
+  }
 }

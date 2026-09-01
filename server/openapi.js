@@ -54,8 +54,19 @@ export const openApiDocument = {
         responses: {
           200: jsonResponse("정상", {
             type: "object",
-            required: ["status"],
-            properties: { status: { type: "string", const: "ok" } },
+            required: ["status", "database"],
+            properties: {
+              status: { type: "string", const: "ok" },
+              database: { type: "string", const: "ok" },
+            },
+          }),
+          503: jsonResponse("데이터베이스 연결 불가", {
+            type: "object",
+            required: ["status", "database"],
+            properties: {
+              status: { type: "string", const: "unavailable" },
+              database: { type: "string", const: "error" },
+            },
           }),
         },
       },
@@ -68,6 +79,7 @@ export const openApiDocument = {
           201: jsonResponse("가입 완료", { $ref: "#/components/schemas/AuthResult" }),
           400: errorResponses[400],
           409: { $ref: "#/components/responses/EmailConflict" },
+          429: { $ref: "#/components/responses/RateLimited" },
         },
       },
     },
@@ -79,6 +91,7 @@ export const openApiDocument = {
           200: jsonResponse("로그인 완료", { $ref: "#/components/schemas/AuthResult" }),
           400: errorResponses[400],
           401: { $ref: "#/components/responses/InvalidCredentials" },
+          429: { $ref: "#/components/responses/RateLimited" },
         },
       },
     },
@@ -90,6 +103,15 @@ export const openApiDocument = {
             type: "object", required: ["user"],
             properties: { user: { $ref: "#/components/schemas/User" } },
           }),
+          401: errorResponses[401],
+        },
+      },
+      delete: {
+        tags: ["Auth"],
+        summary: "현재 사용자 계정 삭제",
+        description: "인증된 본인의 계정과 연결된 구매 후보 및 보유 의류를 삭제합니다.",
+        responses: {
+          204: { description: "계정 삭제 완료" },
           401: errorResponses[401],
         },
       },
@@ -317,6 +339,7 @@ export const openApiDocument = {
       Unauthorized: { ...jsonResponse("인증 필요", { $ref: "#/components/schemas/Error" }) },
       InvalidCredentials: { ...jsonResponse("이메일 또는 비밀번호 불일치", { $ref: "#/components/schemas/Error" }) },
       EmailConflict: { ...jsonResponse("이미 가입된 이메일", { $ref: "#/components/schemas/Error" }) },
+      RateLimited: { ...jsonResponse("요청 제한 초과", { $ref: "#/components/schemas/Error" }) },
       NotFound: { ...jsonResponse("리소스 없음", { $ref: "#/components/schemas/Error" }) },
       Conflict: { ...jsonResponse("현재 상태와 충돌", { $ref: "#/components/schemas/Error" }) },
     },

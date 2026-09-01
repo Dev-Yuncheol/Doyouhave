@@ -61,6 +61,7 @@ function createDatabase() {
       findUnique: vi.fn(), deleteMany: vi.fn(),
     },
   }
+  database.$queryRaw = vi.fn(async () => [{ "?column?": 1 }])
   database.$transaction = vi.fn(async (callback) => callback(database))
   return database
 }
@@ -81,10 +82,22 @@ describe("wardrobe API", () => {
     const specification = await request(app).get("/api/openapi.json")
 
     expect(health.status).toBe(200)
-    expect(health.body).toEqual({ status: "ok" })
+    expect(health.body).toEqual({ status: "ok", database: "ok" })
     expect(specification.status).toBe(200)
     expect(specification.body.info.title).toBe("있니 API")
     expect(specification.body.paths).toHaveProperty("/api/wants/{id}/buy")
+    expect(specification.body.paths["/api/auth/me"]).toHaveProperty("delete")
+    expect(specification.body.paths["/api/auth/login"].post.responses).toHaveProperty("429")
+  })
+
+  it("reports an unavailable database without exposing its internal error", async () => {
+    database.$queryRaw.mockRejectedValue(new Error("secret database details"))
+
+    const health = await request(app).get("/api/health")
+
+    expect(health.status).toBe(503)
+    expect(health.body).toEqual({ status: "unavailable", database: "error" })
+    expect(JSON.stringify(health.body)).not.toContain("secret database details")
   })
 
   it("protects wardrobe resources with bearer authentication", async () => {

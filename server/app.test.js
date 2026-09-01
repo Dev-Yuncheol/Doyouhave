@@ -2,6 +2,7 @@ import request from "supertest"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { createApp } from "./app.js"
 import { signAccessToken } from "./lib/jwt.js"
+import { createFixedWindowRateLimiter } from "./middleware/rate-limit.js"
 
 const JWT_SECRET = "test-secret-that-is-at-least-32-characters-long"
 const now = new Date("2026-08-31T00:00:00.000Z")
@@ -22,7 +23,23 @@ function createDatabase() {
     user: {
       findUnique: vi.fn(),
       create: vi.fn(),
+      delete: vi.fn(),
     },
+  }
+}
+
+function oneRequestAuthRateLimiters() {
+  return {
+    signup: createFixedWindowRateLimiter({
+      max: 1,
+      code: "SIGNUP_RATE_LIMITED",
+      message: "signup limited",
+    }),
+    login: createFixedWindowRateLimiter({
+      max: 1,
+      code: "LOGIN_RATE_LIMITED",
+      message: "login limited",
+    }),
   }
 }
 
@@ -175,5 +192,86 @@ describe("authentication API", () => {
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     })
+  })
+
+  it("deletes only the authenticated user's account", async () => {
+    const currentUser = user()
+    database.user.findUnique.mockResolvedValue(currentUser)
+    database.user.delete.mockResolvedValue(currentUser)
+    const token = signAccessToken(currentUser.id, JWT_SECRET)
+
+    const response = await request(app)
+      .delete("/api/auth/me")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ userId: "a0699852-fee8-43f4-b102-5a10bfd40ee4" })
+
+    expect(response.status).toBe(204)
+    expect(database.user.delete).toHaveBeenCalledWith({
+      where: { id: currentUser.id },
+    })
+  })
+
+  it("rate limits signup independently with a JSON 429 response", async () => {
+    database.user.findUnique.mockResolvedValue(null)
+    database.user.create.mockImplementation(({ data }) =>
+      Promise.resolve(user({ email: data.email })),
+    )
+    app = createApp({
+      database,
+      jwtSecret: JWT_SECRET,
+      passwordService,
+      authRateLimiters: oneRequestAuthRateLimiters(),
+    })
+
+    const firstSignup = await request(app).post("/api/auth/signup").send({
+      email: "first@example.com",
+      password: "password123",
+    })
+    const limitedSignup = await request(app).post("/api/auth/signup").send({
+      email: "second@example.com",
+      password: "password123",
+    })
+    const independentLogin = await request(app).post("/api/auth/login").send({
+      email: "missing@example.com",
+      password: "password123",
+    })
+
+    expect(firstSignup.status).toBe(201)
+    expect(limitedSignup.status).toBe(429)
+    expect(limitedSignup.type).toBe("application/json")
+    expect(limitedSignup.body).toEqual({
+      error: { code: "SIGNUP_RATE_LIMITED", message: "signup limited" },
+    })
+    expect(independentLogin.status).toBe(401)
+  })
+
+  it("rate limits login by the client IP forwarded through Vercel", async () => {
+    database.user.findUnique.mockResolvedValue(null)
+    app = createApp({
+      database,
+      jwtSecret: JWT_SECRET,
+      passwordService,
+      authRateLimiters: oneRequestAuthRateLimiters(),
+    })
+    const credentials = { email: "missing@example.com", password: "password123" }
+
+    const firstAttempt = await request(app)
+      .post("/api/auth/login")
+      .set("X-Forwarded-For", "203.0.113.10")
+      .send(credentials)
+    const limitedAttempt = await request(app)
+      .post("/api/auth/login")
+      .set("X-Forwarded-For", "203.0.113.10")
+      .send(credentials)
+    const otherClient = await request(app)
+      .post("/api/auth/login")
+      .set("X-Forwarded-For", "203.0.113.11")
+      .send(credentials)
+
+    expect(firstAttempt.status).toBe(401)
+    expect(limitedAttempt.status).toBe(429)
+    expect(limitedAttempt.body.error.code).toBe("LOGIN_RATE_LIMITED")
+    expect(limitedAttempt.headers).toHaveProperty("retry-after")
+    expect(otherClient.status).toBe(401)
   })
 })
