@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, Navigate, useSearchParams } from "react-router-dom"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Alert, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -42,19 +42,21 @@ export function LoginPage() {
         await login({ email, password })
       }
     } catch (error) {
-      if (error.message === "EMAIL_TAKEN") {
+      if (error.code === "EMAIL_CONFLICT") {
         setFormError("이미 있는 이메일입니다")
         return
       }
-      if (error.message === "INVALID_CREDENTIALS") {
+      if (error.code === "INVALID_CREDENTIALS") {
         setFormError("이메일 또는 비밀번호가 맞지 않습니다")
         return
       }
-      if (error.message === "SAVE_FAILED") {
-        setFormError("저장하지 못했습니다. 다시 시도해 주세요.")
-        return
+      if (error.code === "VALIDATION_ERROR") {
+        setErrors({
+          email: error.fields?.email?.[0],
+          password: error.fields?.password?.[0],
+        })
       }
-      setFormError("저장하지 못했습니다. 다시 시도해 주세요.")
+      setFormError(error.message || "요청을 처리하지 못했습니다.")
     }
   }
 
@@ -68,13 +70,6 @@ export function LoginPage() {
           집에 비슷한 옷 있니?
         </p>
       </div>
-
-      <Alert>
-        <AlertTitle>실습용이에요. 서버는 없습니다.</AlertTitle>
-        <AlertDescription>
-          비밀번호는 이 브라우저에만 남습니다.
-        </AlertDescription>
-      </Alert>
 
       {formError ? (
         <Alert variant="destructive">

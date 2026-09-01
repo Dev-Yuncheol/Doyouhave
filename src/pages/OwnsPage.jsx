@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { AppHeader } from "@/components/AppHeader"
 import { EmptyState } from "@/components/EmptyState"
+import { DataLoadState } from "@/components/DataLoadState"
 import { FilterChips } from "@/components/FilterChips"
 import { OwnManageDialog } from "@/components/OwnManageDialog"
 import { OwnCard } from "@/components/WantCard"
@@ -10,7 +11,7 @@ export function OwnsPage() {
   const [category, setCategory] = useState("")
   const [color, setColor] = useState("")
   const [panel, setPanel] = useState(null)
-  const { owns, allOwns, saving, updateOwn, deleteOwn } = useOwns({
+  const { owns, allOwns, saving, loading, loadError, reload, updateOwn, deleteOwn } = useOwns({
     category: category || undefined,
     color: color || undefined,
   })
@@ -36,7 +37,9 @@ export function OwnsPage() {
         <FilterChips value={category} onChange={setCategory} />
         <FilterChips type="color" value={color} onChange={setColor} />
 
-        {owns.length > 0 ? (
+        {loading || loadError ? (
+          <DataLoadState loading={loading} error={loadError} onRetry={reload} />
+        ) : owns.length > 0 ? (
           <div className="flex flex-col gap-3">
             {owns.map((own) => (
               <OwnCard

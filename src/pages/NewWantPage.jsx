@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom"
 import { AppHeader } from "@/components/AppHeader"
 import { WantForm } from "@/components/WantForm"
+import { DataLoadState } from "@/components/DataLoadState"
 import { useOwns } from "@/hooks/useOwns"
 import { useWants } from "@/hooks/useWants"
 
 export function NewWantPage() {
   const navigate = useNavigate()
-  const { createWant, saving } = useWants()
+  const { createWant, saving, loading, loadError, reload } = useWants()
   const { similar } = useOwns()
 
   async function handleSubmit(payload) {
@@ -31,11 +32,15 @@ export function NewWantPage() {
             이름, 카테고리, 색만 있으면 됩니다.
           </p>
         </div>
-        <WantForm
-          findSimilar={similar}
-          saving={saving}
-          onSubmit={handleSubmit}
-        />
+        {loading || loadError ? (
+          <DataLoadState loading={loading} error={loadError} onRetry={reload} />
+        ) : (
+          <WantForm
+            findSimilar={similar}
+            saving={saving}
+            onSubmit={handleSubmit}
+          />
+        )}
       </div>
     </div>
   )

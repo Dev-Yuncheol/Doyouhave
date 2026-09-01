@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { AppHeader } from "@/components/AppHeader"
 import { ColorSwatch } from "@/components/ColorSwatch"
+import { DataLoadState } from "@/components/DataLoadState"
 import { SimilarOwns } from "@/components/SimilarOwns"
 import { StatusBadge } from "@/components/StatusBadge"
 import { useOwns } from "@/hooks/useOwns"
@@ -32,7 +33,7 @@ function formatPrice(price) {
 export function WantDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getWant, markBought, markSkipped, deleteWant, saving } =
+  const { getWant, markBought, markSkipped, deleteWant, saving, loading, loadError, reload } =
     useWants()
   const { similar, createOwn, saving: ownSaving } = useOwns()
   const [ownTitle, setOwnTitle] = useState("")
@@ -49,6 +50,17 @@ export function WantDetailPage() {
     : []
   const pending = want?.status === "pending"
   const busy = saving || ownSaving
+
+  if (loading || loadError) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <AppHeader backTo="/" showLogout={false} />
+        <div className="px-5 pt-6">
+          <DataLoadState loading={loading} error={loadError} onRetry={reload} />
+        </div>
+      </div>
+    )
+  }
 
   if (!want) {
     return (
@@ -77,7 +89,6 @@ export function WantDetailPage() {
         categoryDetail: want.categoryDetail,
         color: want.color,
         colorDetail: want.colorDetail,
-        source: "manual",
       })
       setOwnTitle("")
     } catch {

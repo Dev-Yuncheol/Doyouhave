@@ -5,15 +5,30 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "dev:api": "node --env-file=.env --watch server/local.js",
+    "build": "prisma generate && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:db": "node --env-file=.env server/database-smoke-test.js",
+    "test:deploy": "node --env-file=.env server/deployment-smoke-test.js",
+    "test:watch": "vitest",
+    "db:format": "prisma format",
+    "db:validate": "prisma validate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
+    "@prisma/client": "6.12.0",
     "@tailwindcss/vite": "^4.3.3",
+    "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.33.0",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.6.7",
@@ -24,13 +39,17 @@
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
-    "tw-animate-css": "^1.4.0"
+    "tw-animate-css": "^1.4.0",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
     "oxlint": "^1.75.0",
-    "vite": "^8.2.0"
+    "prisma": "6.12.0",
+    "supertest": "^7.2.2",
+    "vite": "^8.2.0",
+    "vitest": "^4.1.11"
   }
 }

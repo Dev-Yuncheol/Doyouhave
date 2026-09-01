@@ -1,32 +1,59 @@
-import { createContext, useContext, useMemo, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import * as auth from "@/lib/auth"
-import { wait } from "@/lib/delay"
-import { getUsers } from "@/lib/storage"
+import {
+  clearLegacyStorage,
+  getAccessToken,
+  saveAccessToken,
+  subscribeToUnauthorized,
+} from "@/lib/api"
 
 const SessionContext = createContext(null)
 
 export function SessionProvider({ children }) {
-  const [session, setSession] = useState(() => auth.getSession())
+  const [user, setUser] = useState(null)
+  const [restoring, setRestoring] = useState(() => Boolean(getAccessToken()))
   const [pending, setPending] = useState(false)
 
-  const user = useMemo(() => {
-    if (!session?.userId) return null
-    return getUsers().find((item) => item.id === session.userId) ?? null
-  }, [session])
+  useEffect(() => {
+    clearLegacyStorage()
+    const unsubscribe = subscribeToUnauthorized(() => setUser(null))
+    const token = getAccessToken()
+
+    if (!token) {
+      setRestoring(false)
+      return unsubscribe
+    }
+
+    const controller = new AbortController()
+    auth
+      .getMe(controller.signal)
+      .then(({ user: restoredUser }) => setUser(restoredUser))
+      .catch((error) => {
+        if (error.name !== "AbortError") setUser(null)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setRestoring(false)
+      })
+
+    return () => {
+      controller.abort()
+      unsubscribe()
+    }
+  }, [])
 
   const value = useMemo(
     () => ({
-      session,
       user,
       pending,
-      isLoggedIn: Boolean(session?.userId),
+      restoring,
+      isLoggedIn: Boolean(user),
       async login(payload) {
         setPending(true)
         try {
-          await wait(300)
-          const next = auth.login(payload)
-          setSession(next)
-          return next
+          const result = await auth.login(payload)
+          saveAccessToken(result.token)
+          setUser(result.user)
+          return result
         } finally {
           setPending(false)
         }
@@ -34,20 +61,20 @@ export function SessionProvider({ children }) {
       async signUp(payload) {
         setPending(true)
         try {
-          await wait(300)
-          const next = auth.signUp(payload)
-          setSession(next)
-          return next
+          const result = await auth.signUp(payload)
+          saveAccessToken(result.token)
+          setUser(result.user)
+          return result
         } finally {
           setPending(false)
         }
       },
       logout() {
-        auth.logout()
-        setSession(null)
+        saveAccessToken(null)
+        setUser(null)
       },
     }),
-    [session, user, pending],
+    [user, pending, restoring],
   )
 
   return (

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AppHeader } from "@/components/AppHeader"
 import { EmptyState } from "@/components/EmptyState"
+import { DataLoadState } from "@/components/DataLoadState"
 import { FilterChips } from "@/components/FilterChips"
 import { WantCard } from "@/components/WantCard"
 import { useOwns } from "@/hooks/useOwns"
@@ -12,7 +13,7 @@ import { useWants } from "@/hooks/useWants"
 export function HomePage() {
   const [status, setStatus] = useState("pending")
   const [category, setCategory] = useState("")
-  const { wants: statusWants } = useWants({ status })
+  const { wants: statusWants, loading, loadError, reload } = useWants({ status })
   const { similar } = useOwns()
   const wants = category
     ? statusWants.filter((want) => want.category === category)
@@ -44,7 +45,9 @@ export function HomePage() {
 
           <FilterChips value={category} onChange={setCategory} />
 
-          {wants.length > 0 ? (
+          {loading || loadError ? (
+            <DataLoadState loading={loading} error={loadError} onRetry={reload} />
+          ) : wants.length > 0 ? (
             <div className="flex flex-col gap-3 pb-4">
               {wants.map((want) => (
                 <WantCard

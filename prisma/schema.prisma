@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum WantStatus {
+  PENDING
+  BOUGHT
+  SKIPPED
+}
+
+enum OwnSource {
+  MANUAL
+  BOUGHT
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique @db.VarChar(320)
+  passwordHash String   @db.VarChar(255)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+  wants        Want[]
+  owns         Own[]
+}
+
+model Want {
+  id             String     @id @default(uuid()) @db.Uuid
+  title          String     @db.VarChar(120)
+  url            String?    @db.Text
+  category       String     @db.VarChar(32)
+  categoryDetail String?    @db.VarChar(80)
+  color          String     @db.VarChar(32)
+  colorDetail    String?    @db.VarChar(80)
+  price          Int?
+  note           String?    @db.Text
+  status         WantStatus @default(PENDING)
+  userId         String     @db.Uuid
+  createdAt      DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime   @updatedAt @db.Timestamptz(3)
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  own            Own?
+
+  @@index([userId, status, createdAt])
+  @@index([userId, category])
+}
+
+model Own {
+  id             String    @id @default(uuid()) @db.Uuid
+  title          String    @db.VarChar(120)
+  category       String    @db.VarChar(32)
+  categoryDetail String?   @db.VarChar(80)
+  color          String    @db.VarChar(32)
+  colorDetail    String?   @db.VarChar(80)
+  source         OwnSource @default(MANUAL)
+  fromWantId     String?   @unique @db.Uuid
+  userId         String    @db.Uuid
+  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(3)
+  fromWant       Want?     @relation(fields: [fromWantId], references: [id], onDelete: SetNull)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, category, color])
+  @@index([userId, createdAt])
+}
