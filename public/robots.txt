@@ -1,0 +1,12 @@
+# Only selected search engines may crawl the landing page and render assets.
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: Yeti
+Allow: /$
+Allow: /assets/
+Allow: /icons.svg$
+Disallow: /
+
+# All other crawlers, including AI crawlers, are disallowed.
+User-agent: *
+Disallow: /
