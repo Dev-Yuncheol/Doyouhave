@@ -14,6 +14,9 @@ const idParameter = {
 }
 
 const itemProperties = {
+  url: { type: ["string", "null"], format: "uri", maxLength: 2048 },
+  price: { type: ["integer", "null"], minimum: 0, maximum: 2147483647 },
+  note: { type: ["string", "null"], maxLength: 2000 },
   title: { type: "string", minLength: 1, maxLength: 120, example: "검은 재킷" },
   category: { type: "string", enum: categories, example: "outer" },
   categoryDetail: { type: ["string", "null"], maxLength: 80, example: null },

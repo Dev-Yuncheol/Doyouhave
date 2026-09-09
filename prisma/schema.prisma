@@ -53,6 +53,9 @@ model Want {
 model Own {
   id             String    @id @default(uuid()) @db.Uuid
   title          String    @db.VarChar(120)
+  url            String?   @db.Text
+  price          Int?
+  note           String?   @db.Text
   category       String    @db.VarChar(32)
   categoryDetail String?   @db.VarChar(80)
   color          String    @db.VarChar(32)

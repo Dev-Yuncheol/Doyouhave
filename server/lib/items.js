@@ -108,6 +108,9 @@ export const wantQuerySchema = z.strictObject({
 })
 
 export const createOwnSchema = z.strictObject({
+  url: nullableUrlSchema.optional(),
+  price: nullablePriceSchema.optional(),
+  note: nullableNoteSchema.optional(),
   title: titleSchema,
   category: categorySchema,
   categoryDetail: detailSchema.optional(),
@@ -117,6 +120,9 @@ export const createOwnSchema = z.strictObject({
 
 export const updateOwnSchema = z
   .strictObject({
+    url: nullableUrlSchema.optional(),
+    price: nullablePriceSchema.optional(),
+    note: nullableNoteSchema.optional(),
     title: titleSchema.optional(),
     category: categorySchema.optional(),
     categoryDetail: detailSchema.optional(),
@@ -174,6 +180,9 @@ export function serializeWant(want) {
 
 export function serializeOwn(own) {
   return {
+    url: own.url ?? null,
+    price: own.price ?? null,
+    note: own.note ?? null,
     id: own.id,
     title: own.title,
     category: own.category,

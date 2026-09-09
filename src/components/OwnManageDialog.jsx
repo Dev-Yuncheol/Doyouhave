@@ -16,6 +16,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { getPriceError, MAX_PRICE } from "@/lib/price"
 import {
   Select,
   SelectContent,
@@ -122,9 +124,17 @@ function EditView({ own, saving, onClose, onAskDelete, onSave }) {
     if (values.color === "other" && !values.colorDetail.trim()) {
       next.colorDetail = "색 이름을 적어 주세요"
     }
+    const priceError = getPriceError(values.price)
+    if (priceError) next.price = priceError
+    if (values.url.trim() && !URL.canParse(values.url.trim())) {
+      next.url = "올바른 URL을 입력해 주세요."
+    }
     setErrors(next)
     if (Object.keys(next).length) return
     await onSave({
+      url: values.url.trim() || null,
+      price: values.price === "" ? null : Number(values.price),
+      note: values.note.trim() || null,
       title: values.title.trim(),
       category: values.category,
       categoryDetail:
@@ -140,7 +150,7 @@ function EditView({ own, saving, onClose, onAskDelete, onSave }) {
       <AlertDialogHeader>
         <AlertDialogTitle className="truncate">{own.title}</AlertDialogTitle>
         <AlertDialogDescription>
-          이름·카테고리·색을 고칠 수 있어요.
+          이름·카테고리·색과 가격·링크·메모를 고칠 수 있어요.
         </AlertDialogDescription>
       </AlertDialogHeader>
       <FieldGroup className="gap-3">
@@ -240,6 +250,48 @@ function EditView({ own, saving, onClose, onAskDelete, onSave }) {
             <FieldError>{errors.colorDetail}</FieldError>
           </Field>
         ) : null}
+        <Field data-invalid={errors.price ? true : undefined}>
+          <FieldLabel htmlFor="own-price">가격</FieldLabel>
+          <Input
+            id="own-price"
+            type="number"
+            min="0"
+            max={String(MAX_PRICE)}
+            step="1"
+            inputMode="numeric"
+            placeholder="선택"
+            value={values.price}
+            onChange={(event) => update("price", event.target.value)}
+            aria-invalid={Boolean(errors.price)}
+            className="h-10"
+          />
+          <FieldError>{errors.price}</FieldError>
+        </Field>
+        <Field data-invalid={errors.url ? true : undefined}>
+          <FieldLabel htmlFor="own-url">링크</FieldLabel>
+          <Input
+            id="own-url"
+            type="url"
+            inputMode="url"
+            placeholder="선택"
+            maxLength={2048}
+            value={values.url}
+            onChange={(event) => update("url", event.target.value)}
+            aria-invalid={Boolean(errors.url)}
+            className="h-10"
+          />
+          <FieldError>{errors.url}</FieldError>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="own-note">메모</FieldLabel>
+          <Textarea
+            id="own-note"
+            placeholder="선택"
+            maxLength={2000}
+            value={values.note}
+            onChange={(event) => update("note", event.target.value)}
+          />
+        </Field>
       </FieldGroup>
       <AlertDialogFooter className="flex-col gap-2">
         <div className="grid w-full grid-cols-2 gap-2">
@@ -278,6 +330,9 @@ function EditView({ own, saving, onClose, onAskDelete, onSave }) {
 
 function formFromOwn(own) {
   return {
+    url: own.url ?? "",
+    price: own.price == null ? "" : String(own.price),
+    note: own.note ?? "",
     title: own.title ?? "",
     category: own.category ?? "",
     categoryDetail: own.categoryDetail ?? "",

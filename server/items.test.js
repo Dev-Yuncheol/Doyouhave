@@ -205,6 +205,33 @@ describe("wardrobe API", () => {
     expect(database.own.deleteMany).toHaveBeenCalledWith({ where: { id: OWN_ID, userId: USER_ID } })
   })
 
+  it("saves, preserves, lists, and clears optional owned-item details", async () => {
+    let stored = own()
+    database.own.findFirst.mockImplementation(async () => stored)
+    database.own.update.mockImplementation(async ({ data }) => (stored = { ...stored, ...data }))
+    database.own.findMany.mockImplementation(async () => [stored])
+    const details = { price: 10000, url: "https://example.com/shirt", note: "탑텐" }
+    const edit = (body) => request(app).patch(`/api/owns/${OWN_ID}`)
+      .set("Authorization", authorization).send(body)
+    expect((await edit(details)).body.own).toMatchObject(details)
+    expect((await edit({ title: "반팔" })).body.own).toMatchObject(details)
+    const listed = await request(app).get("/api/owns").set("Authorization", authorization)
+    expect(listed.body.owns[0]).toMatchObject(details)
+    expect((await edit({ price: 0 })).body.own.price).toBe(0)
+    const cleared = await edit({ price: null, url: null, note: null })
+    expect(cleared.status).toBe(200)
+    expect(cleared.body.own).toMatchObject({ price: null, url: null, note: null })
+  })
+
+  it.each([{ price: -1 }, { price: 1.5 }, { price: 2147483648 }, { url: "invalid" }, { note: "x".repeat(2001) }])(
+    "rejects invalid owned-item details %j", async (body) => {
+      const response = await request(app).patch(`/api/owns/${OWN_ID}`)
+        .set("Authorization", authorization).send(body)
+      expect(response.status).toBe(400)
+      expect(database.own.update).not.toHaveBeenCalled()
+    },
+  )
+
   it("returns not found without mutating another user's resource", async () => {
     database.want.findFirst.mockResolvedValue(null)
     database.want.deleteMany.mockResolvedValue({ count: 0 })
@@ -224,7 +251,7 @@ describe("wardrobe API", () => {
 
   it("atomically marks a pending want bought and creates an owned item", async () => {
     database.want.updateMany.mockResolvedValue({ count: 1 })
-    database.want.findUniqueOrThrow.mockResolvedValue(want({ status: "BOUGHT" }))
+    database.want.findUniqueOrThrow.mockResolvedValue(want({ status: "BOUGHT", url: "https://example.com/shirt", note: "탑텐" }))
     database.own.create.mockResolvedValue(own({ source: "BOUGHT", fromWantId: ITEM_ID }))
 
     const response = await request(app)
@@ -236,7 +263,7 @@ describe("wardrobe API", () => {
     expect(response.body.own).toMatchObject({ source: "bought", fromWantId: ITEM_ID })
     expect(database.$transaction).toHaveBeenCalledOnce()
     expect(database.own.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ userId: USER_ID, fromWantId: ITEM_ID, source: "BOUGHT" }),
+      data: expect.objectContaining({ userId: USER_ID, fromWantId: ITEM_ID, source: "BOUGHT", price: 129000, url: "https://example.com/shirt", note: "탑텐" }),
     })
   })
 })

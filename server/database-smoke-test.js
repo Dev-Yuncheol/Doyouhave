@@ -127,6 +127,9 @@ try {
   assert.equal(bought.body.own.source, "bought")
   assert.equal(bought.body.own.fromWantId, wantId)
   const boughtOwnId = bought.body.own.id
+  assert.equal(bought.body.own.price, bought.body.want.price)
+  assert.equal(bought.body.own.url, bought.body.want.url)
+  assert.equal(bought.body.own.note, bought.body.want.note)
 
   const repeatedBuy = await api
     .post(`/api/wants/${wantId}/buy`)
@@ -177,9 +180,22 @@ try {
   const updatedOwn = await api
     .patch(`/api/owns/${boughtOwnId}`)
     .set("Authorization", `Bearer ${token}`)
-    .send({ title: "구매한 검은 재킷" })
+    .send({ title: "구매한 검은 재킷", price: 10000, url: "https://example.com/shirt", note: "탑텐" })
   assert.equal(updatedOwn.status, 200)
   assert.equal(updatedOwn.body.own.title, "구매한 검은 재킷")
+  const persistedOwn = await prisma.own.findUnique({ where: { id: boughtOwnId } })
+  assert.equal(persistedOwn.price, 10000)
+  assert.equal(persistedOwn.url, "https://example.com/shirt")
+  assert.equal(persistedOwn.note, "탑텐")
+
+  const clearedOwn = await api.patch(`/api/owns/${boughtOwnId}`)
+    .set("Authorization", `Bearer ${token}`)
+    .send({ price: null, url: null, note: null })
+  assert.equal(clearedOwn.status, 200)
+  const clearedStoredOwn = await prisma.own.findUnique({ where: { id: boughtOwnId } })
+  assert.equal(clearedStoredOwn.price, null)
+  assert.equal(clearedStoredOwn.url, null)
+  assert.equal(clearedStoredOwn.note, null)
 
   const deletedWant = await api
     .delete(`/api/wants/${wantId}`)

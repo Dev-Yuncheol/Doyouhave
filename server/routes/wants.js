@@ -178,6 +178,9 @@ export function createWantsRouter({ database, jwtSecret }) {
           const own = await transaction.own.create({
             data: {
               title: want.title,
+              url: want.url,
+              price: want.price,
+              note: want.note,
               category: want.category,
               categoryDetail: want.categoryDetail,
               color: want.color,

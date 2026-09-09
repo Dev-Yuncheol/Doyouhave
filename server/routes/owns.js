@@ -62,6 +62,9 @@ export function createOwnsRouter({ database, jwtSecret }) {
 
       const patch = request.validatedBody
       const merged = normalizeItemDetails({
+        url: patch.url === undefined ? existing.url : patch.url,
+        price: patch.price === undefined ? existing.price : patch.price,
+        note: patch.note === undefined ? existing.note : patch.note,
         title: patch.title ?? existing.title,
         category: patch.category ?? existing.category,
         categoryDetail:
