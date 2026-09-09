@@ -82,7 +82,8 @@ export function WantForm({ findSimilar, saving, onSubmit, onCancel }) {
     if (values.color === "other" && !values.colorDetail.trim()) {
       next.colorDetail = "색 이름을 적어 주세요"
     }
-    next.price = getPriceError(values.price)
+    const priceError = getPriceError(values.price)
+    if (priceError) next.price = priceError
     setErrors(next)
     return Object.keys(next).length === 0
   }

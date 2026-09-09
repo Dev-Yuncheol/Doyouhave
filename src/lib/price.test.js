@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { getPriceError, MAX_PRICE } from "./price.js"
 
 describe("price validation", () => {
-  it.each(["", "0", String(MAX_PRICE)])("accepts %j", (value) => {
+  it.each(["", "0", "10000", String(MAX_PRICE)])("accepts %j", (value) => {
     expect(getPriceError(value)).toBeUndefined()
   })
 
