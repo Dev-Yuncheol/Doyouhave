@@ -5,12 +5,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { APP_NAME } from "@/lib/constants"
-import imgHero from "@/assets/1hero src.png"
-import imgInput from "@/assets/2input src.png"
-import imgFound from "@/assets/3foundhome src.png"
-import imgNotBuy from "@/assets/4notbuy src.png"
-import imgPrice from "@/assets/5price src.png"
-import imgCta from "@/assets/6cta src.png"
+import imgHero from "@/assets/1hero src.webp"
+import imgInput from "@/assets/2input src.webp"
+import imgFound from "@/assets/3foundhome src.webp"
+import imgNotBuy from "@/assets/4notbuy src.webp"
+import imgPrice from "@/assets/5price src.webp"
+import imgCta from "@/assets/6cta src.webp"
 
 const INPUT_STEPS = ["이름", "카테고리", "색"]
 

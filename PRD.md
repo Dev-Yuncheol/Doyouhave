@@ -290,7 +290,7 @@ src/
   lib/storage.js       localStorage 읽기/쓰기
   lib/match.js         category + color (+ etc/other 상세)
   lib/auth.js          signUp, login, logout
-  assets/              랜딩 2시안 소스 사진 (`1hero src.png` … `6cta src.png`)
+  assets/              랜딩 2시안 소스 사진 (`1hero src.webp` … `6cta src.webp`)
 ```
 
 - 페이지는 데이터를 직접 localStorage에 쓰지 않는다. hook만 부른다.
