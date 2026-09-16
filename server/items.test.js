@@ -203,6 +203,64 @@ describe("wardrobe API", () => {
     expect(updated.body.own.title).toBe("검정 재킷")
     expect(deleted.status).toBe(204)
     expect(database.own.deleteMany).toHaveBeenCalledWith({ where: { id: OWN_ID, userId: USER_ID } })
+    expect(database.want.deleteMany).not.toHaveBeenCalled()
+  })
+
+  it("deletes the owned item and its linked purchase in one transaction", async () => {
+    const transaction = createDatabase()
+    transaction.own.findFirst.mockResolvedValue(own({ source: "BOUGHT", fromWantId: ITEM_ID }))
+    transaction.own.deleteMany.mockResolvedValue({ count: 1 })
+    transaction.want.deleteMany.mockResolvedValue({ count: 1 })
+    database.$transaction.mockImplementation(async (callback) => callback(transaction))
+
+    const response = await request(app).delete(`/api/owns/${OWN_ID}`)
+      .set("Authorization", authorization)
+
+    expect(response.status).toBe(204)
+    expect(database.$transaction).toHaveBeenCalledOnce()
+    expect(transaction.own.findFirst).toHaveBeenCalledWith({ where: { id: OWN_ID, userId: USER_ID } })
+    expect(transaction.own.deleteMany).toHaveBeenCalledWith({ where: { id: OWN_ID, userId: USER_ID } })
+    expect(transaction.want.deleteMany).toHaveBeenCalledWith({ where: { id: ITEM_ID, userId: USER_ID } })
+    expect(database.own.deleteMany).not.toHaveBeenCalled()
+    expect(database.want.deleteMany).not.toHaveBeenCalled()
+  })
+
+  it("deletes a bought item whose purchase was already removed", async () => {
+    database.own.findFirst.mockResolvedValue(own({ source: "BOUGHT", fromWantId: null }))
+    database.own.deleteMany.mockResolvedValue({ count: 1 })
+    const response = await request(app).delete(`/api/owns/${OWN_ID}`)
+      .set("Authorization", authorization)
+    expect(response.status).toBe(204)
+    expect(database.want.deleteMany).not.toHaveBeenCalled()
+  })
+
+  it("does not delete anything when the owned item is missing or belongs to another user", async () => {
+    database.own.findFirst.mockResolvedValue(null)
+    const response = await request(app).delete(`/api/owns/${OWN_ID}`)
+      .set("Authorization", authorization)
+    expect(response.status).toBe(404)
+    expect(database.own.findFirst).toHaveBeenCalledWith({ where: { id: OWN_ID, userId: USER_ID } })
+    expect(database.own.deleteMany).not.toHaveBeenCalled()
+    expect(database.want.deleteMany).not.toHaveBeenCalled()
+  })
+
+  it("does not delete the purchase if the owned item was concurrently removed", async () => {
+    database.own.findFirst.mockResolvedValue(own({ source: "BOUGHT", fromWantId: ITEM_ID }))
+    database.own.deleteMany.mockResolvedValue({ count: 0 })
+    const response = await request(app).delete(`/api/owns/${OWN_ID}`)
+      .set("Authorization", authorization)
+    expect(response.status).toBe(404)
+    expect(database.want.deleteMany).not.toHaveBeenCalled()
+  })
+
+  it("rejects the transaction when deleting the linked purchase fails", async () => {
+    database.own.findFirst.mockResolvedValue(own({ source: "BOUGHT", fromWantId: ITEM_ID }))
+    database.own.deleteMany.mockResolvedValue({ count: 1 })
+    database.want.deleteMany.mockRejectedValue(new Error("purchase deletion failed"))
+    const response = await request(app).delete(`/api/owns/${OWN_ID}`)
+      .set("Authorization", authorization)
+    expect(response.status).toBe(500)
+    await expect(database.$transaction.mock.results[0].value).rejects.toThrow("purchase deletion failed")
   })
 
   it("saves, preserves, lists, and clears optional owned-item details", async () => {

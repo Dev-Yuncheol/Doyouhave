@@ -114,8 +114,12 @@ export function WardrobeDataProvider({ children }) {
         return own
       }),
       deleteOwn: (id) => runMutation(async () => {
+        const fromWantId = visibleOwns.find((item) => item.id === id)?.fromWantId
         await apiRequest(`/owns/${id}`, { method: "DELETE" })
         setOwns((current) => current.filter((item) => item.id !== id))
+        if (fromWantId) {
+          setWants((current) => current.filter((item) => item.id !== fromWantId))
+        }
       }),
     }),
     [visibleWants, visibleOwns, visibleLoading, saving, visibleLoadError, runMutation],

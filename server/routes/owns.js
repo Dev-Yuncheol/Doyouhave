@@ -90,14 +90,23 @@ export function createOwnsRouter({ database, jwtSecret }) {
     "/:id",
     validateParams(idParamsSchema),
     async (request, response) => {
-      const result = await database.own.deleteMany({
-        where: {
+      await database.$transaction(async (transaction) => {
+        const where = {
           id: request.validatedParams.id,
           userId: request.user.id,
-        },
-      })
+        }
+        const own = await transaction.own.findFirst({ where })
+        if (!own) throw notFound("보유 의류")
 
-      if (result.count === 0) throw notFound("보유 의류")
+        const result = await transaction.own.deleteMany({ where })
+        if (result.count === 0) throw notFound("보유 의류")
+
+        if (own.fromWantId) {
+          await transaction.want.deleteMany({
+            where: { id: own.fromWantId, userId: request.user.id },
+          })
+        }
+      })
 
       response.status(204).end()
     },

@@ -74,6 +74,7 @@ function DeleteView({ own, saving, onClose, onDelete }) {
         <AlertDialogTitle>이 줄을 지울까요?</AlertDialogTitle>
         <AlertDialogDescription>
           {own.title} — 집에 있는 것에서 사라집니다.
+          {own.fromWantId ? " 연결된 구매 기록도 함께 삭제됩니다." : ""}
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter className="grid grid-cols-2 gap-2">

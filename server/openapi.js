@@ -240,6 +240,7 @@ export const openApiDocument = {
       },
       delete: {
         tags: ["Owns"], summary: "보유 의류 삭제", parameters: [idParameter],
+        description: "연결된 구매 후보 기록이 있으면 보유 의류와 함께 삭제합니다.",
         responses: {
           204: { description: "삭제 완료" },
           400: errorResponses[400], 401: errorResponses[401],
