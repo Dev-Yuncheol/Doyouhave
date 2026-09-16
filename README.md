@@ -132,6 +132,7 @@ npx vercel deploy --prod
 
 | 파일 | 내용 |
 |---|---|
+| [FUNCTIONAL_SPEC.md](./FUNCTIONAL_SPEC.md) | 현재 구현 기준 기능명세서: 화면, 처리 규칙, API, 인수 확인 시나리오 |
 | [PRD.md](./PRD.md) | 제품 범위, 흐름, 데이터 모델 |
 | [DESIGN.md](./DESIGN.md) | 디자인 원칙과 UI 토큰 |
 | [TASK.md](./TASK.md) | 구현 단계 |
