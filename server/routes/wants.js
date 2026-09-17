@@ -1,4 +1,5 @@
 import { Router } from "express"
+import { listPage } from "../lib/pagination.js"
 import { AppError } from "../lib/app-error.js"
 import {
   createWantSchema,
@@ -40,16 +41,17 @@ export function createWantsRouter({ database, jwtSecret }) {
 
   router.get("/", validateQuery(wantQuerySchema), async (request, response) => {
     const { status, category } = request.validatedQuery
-    const wants = await database.want.findMany({
-      where: {
+    const page = await listPage(
+      database.want,
+      {
         userId: request.user.id,
         ...(status ? { status: WANT_STATUS_TO_DATABASE[status] } : {}),
         ...(category ? { category } : {}),
       },
-      orderBy: { createdAt: "desc" },
-    })
+      request.validatedQuery,
+    )
 
-    response.json({ wants: wants.map(serializeWant) })
+    response.json({ wants: page.items.map(serializeWant), nextCursor: page.nextCursor })
   })
 
   router.get("/:id", validateParams(idParamsSchema), async (request, response) => {
@@ -125,10 +127,17 @@ export function createWantsRouter({ database, jwtSecret }) {
         where: {
           id: request.validatedParams.id,
           userId: request.user.id,
+          status: { not: "BOUGHT" },
         },
       })
 
-      if (result.count === 0) throw notFound("구매 후보")
+      if (result.count === 0) {
+        const existing = await database.want.findFirst({
+          where: { id: request.validatedParams.id, userId: request.user.id },
+        })
+        if (!existing) throw notFound("구매 후보")
+        throw new AppError(409, "WANT_ALREADY_BOUGHT", "구매한 의류는 내 옷장에서 삭제해 주세요.")
+      }
 
       response.status(204).end()
     },
@@ -161,7 +170,7 @@ export function createWantsRouter({ database, jwtSecret }) {
               })
 
               if (existingOwn) {
-                return { want: existingWant, own: existingOwn }
+                return { want: existingWant, own: existingOwn, created: false }
               }
             }
 
@@ -191,14 +200,16 @@ export function createWantsRouter({ database, jwtSecret }) {
             },
           })
 
-          return { want, own }
+          return { want, own, created: true }
         },
         { maxWait: 2_000, timeout: 5_000 },
       )
 
-      response.json({
+      if (result.created) response.location(`/api/owns/${result.own.id}`)
+      response.status(result.created ? 201 : 200).json({
         want: serializeWant(result.want),
         own: serializeOwn(result.own),
+        created: result.created,
       })
     },
   )

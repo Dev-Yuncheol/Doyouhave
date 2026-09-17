@@ -77,3 +77,21 @@ export async function apiRequest(path, { body, auth = true, ...options } = {}) {
 
   return payload
 }
+
+// Existing filters and similarity matching need the complete collection.
+// Follow bounded API pages so items after the first page remain available.
+export async function fetchCollection(path, key, { signal } = {}) {
+  const items = new Map()
+  const seen = new Set()
+  let cursor = null
+  do {
+    const query = new URLSearchParams({ limit: "100" })
+    if (cursor) query.set("cursor", cursor)
+    const page = await apiRequest(`${path}?${query}`, { signal })
+    for (const item of page[key]) items.set(item.id, item)
+    cursor = page.nextCursor
+    if (cursor && seen.has(cursor)) throw new Error("목록을 불러오지 못했습니다. 다시 시도해 주세요.")
+    if (cursor) seen.add(cursor)
+  } while (cursor)
+  return [...items.values()]
+}

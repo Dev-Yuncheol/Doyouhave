@@ -1,4 +1,5 @@
 import { Router } from "express"
+import { listPage } from "../lib/pagination.js"
 import {
   createOwnSchema,
   idParamsSchema,
@@ -35,16 +36,25 @@ export function createOwnsRouter({ database, jwtSecret }) {
 
   router.get("/", validateQuery(ownQuerySchema), async (request, response) => {
     const { category, color } = request.validatedQuery
-    const owns = await database.own.findMany({
-      where: {
+    const page = await listPage(
+      database.own,
+      {
         userId: request.user.id,
         ...(category ? { category } : {}),
         ...(color ? { color } : {}),
       },
-      orderBy: { createdAt: "desc" },
-    })
+      request.validatedQuery,
+    )
 
-    response.json({ owns: owns.map(serializeOwn) })
+    response.json({ owns: page.items.map(serializeOwn), nextCursor: page.nextCursor })
+  })
+
+  router.get("/:id", validateParams(idParamsSchema), async (request, response) => {
+    const own = await database.own.findFirst({
+      where: { id: request.validatedParams.id, userId: request.user.id },
+    })
+    if (!own) throw notFound("보유 의류")
+    response.json({ own: serializeOwn(own) })
   })
 
   router.patch(

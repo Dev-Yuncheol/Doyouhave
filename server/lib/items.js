@@ -103,6 +103,8 @@ export const updateWantSchema = z
   })
 
 export const wantQuerySchema = z.strictObject({
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  cursor: z.uuid().optional(),
   status: z.enum(["pending", "bought", "skipped"]).optional(),
   category: categorySchema.optional(),
 })
@@ -134,6 +136,8 @@ export const updateOwnSchema = z
   })
 
 export const ownQuerySchema = z.strictObject({
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  cursor: z.uuid().optional(),
   category: categorySchema.optional(),
   color: colorSchema.optional(),
 })

@@ -122,7 +122,7 @@ try {
   const bought = await api
     .post(`/api/wants/${wantId}/buy`)
     .set("Authorization", `Bearer ${token}`)
-  assert.equal(bought.status, 200)
+  assert.equal(bought.status, 201)
   assert.equal(bought.body.want.status, "bought")
   assert.equal(bought.body.own.source, "bought")
   assert.equal(bought.body.own.fromWantId, wantId)
@@ -200,12 +200,12 @@ try {
   const deletedWant = await api
     .delete(`/api/wants/${wantId}`)
     .set("Authorization", `Bearer ${token}`)
-  assert.equal(deletedWant.status, 204)
+  assert.equal(deletedWant.status, 409)
 
   const detachedOwn = await prisma.own.findUnique({
     where: { id: boughtOwnId },
   })
-  assert.equal(detachedOwn.fromWantId, null)
+  assert.equal(detachedOwn.fromWantId, wantId)
 
   const deletedBoughtOwn = await api
     .delete(`/api/owns/${boughtOwnId}`)

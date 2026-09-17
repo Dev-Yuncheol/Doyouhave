@@ -133,7 +133,8 @@ describe("wardrobe API", () => {
     expect(listed.status).toBe(200)
     expect(database.want.findMany).toHaveBeenCalledWith({
       where: { userId: USER_ID, status: "PENDING", category: "outer" },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 51,
     })
   })
 
@@ -147,7 +148,8 @@ describe("wardrobe API", () => {
     expect(response.status).toBe(200)
     expect(database.want.findMany).toHaveBeenCalledWith({
       where: { userId: USER_ID, status: "PENDING" },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 51,
     })
   })
 
@@ -197,7 +199,8 @@ describe("wardrobe API", () => {
     expect(listed.status).toBe(200)
     expect(database.own.findMany).toHaveBeenCalledWith({
       where: { userId: USER_ID, category: "outer", color: "black" },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 51,
     })
     expect(updated.status).toBe(200)
     expect(updated.body.own.title).toBe("검정 재킷")
@@ -307,6 +310,82 @@ describe("wardrobe API", () => {
     expect(database.want.update).not.toHaveBeenCalled()
   })
 
+  it("blocks deletion of a bought want without detaching its own", async () => {
+    database.want.deleteMany.mockResolvedValue({ count: 0 })
+    database.want.findFirst.mockResolvedValue(want({ status: "BOUGHT" }))
+    const response = await request(app).delete(`/api/wants/${ITEM_ID}`).set("Authorization", authorization)
+    expect(response.status).toBe(409)
+    expect(response.body.error.code).toBe("WANT_ALREADY_BOUGHT")
+    expect(database.want.deleteMany).toHaveBeenCalledWith({
+      where: { id: ITEM_ID, userId: USER_ID, status: { not: "BOUGHT" } },
+    })
+    expect(database.own.deleteMany).not.toHaveBeenCalled()
+  })
+
+  it("deletes an unpurchased want with an atomic status condition", async () => {
+    database.want.deleteMany.mockResolvedValue({ count: 1 })
+    const response = await request(app).delete(`/api/wants/${ITEM_ID}`).set("Authorization", authorization)
+    expect(response.status).toBe(204)
+    expect(database.want.findFirst).not.toHaveBeenCalled()
+  })
+
+  it("returns an existing purchase with 200 and no creation location", async () => {
+    database.want.updateMany.mockResolvedValue({ count: 0 })
+    database.want.findFirst.mockResolvedValue(want({ status: "BOUGHT" }))
+    database.own.findUnique.mockResolvedValue(own({ source: "BOUGHT", fromWantId: ITEM_ID }))
+    const response = await request(app).post(`/api/wants/${ITEM_ID}/buy`).set("Authorization", authorization)
+    expect(response.status).toBe(200)
+    expect(response.body.created).toBe(false)
+    expect(response.headers.location).toBeUndefined()
+    expect(database.own.create).not.toHaveBeenCalled()
+  })
+
+  it("reads only the current user's owned item", async () => {
+    database.own.findFirst.mockResolvedValue(own())
+    const response = await request(app).get(`/api/owns/${OWN_ID}`).set("Authorization", authorization)
+    expect(response.status).toBe(200)
+    expect(response.body.own.id).toBe(OWN_ID)
+    expect(database.own.findFirst).toHaveBeenCalledWith({ where: { id: OWN_ID, userId: USER_ID } })
+    database.own.findFirst.mockResolvedValue(null)
+    expect((await request(app).get(`/api/owns/${OWN_ID}`).set("Authorization", authorization)).status).toBe(404)
+  })
+
+  it.each(["wants", "owns"])("bounds %s pages and returns a continuation cursor", async (resource) => {
+    const model = resource === "wants" ? database.want : database.own
+    const make = resource === "wants" ? want : own
+    model.findMany.mockResolvedValue([make({ id: ITEM_ID }), make({ id: OWN_ID })])
+    const response = await request(app).get(`/api/${resource}?limit=1`).set("Authorization", authorization)
+    expect(response.status).toBe(200)
+    expect(response.body[resource]).toHaveLength(1)
+    expect(response.body.nextCursor).toBe(ITEM_ID)
+    expect(model.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 2 }))
+    model.findFirst.mockResolvedValue(make({ id: ITEM_ID }))
+    model.findMany.mockResolvedValue([make({ id: OWN_ID })])
+    const last = await request(app).get(`/api/${resource}?limit=1&cursor=${ITEM_ID}`).set("Authorization", authorization)
+    expect(last.body.nextCursor).toBeNull()
+    expect(last.body[resource][0].id).toBe(OWN_ID)
+    expect(model.findMany).toHaveBeenLastCalledWith({
+      where: { userId: USER_ID, OR: [{ createdAt: { lt: now } }, { createdAt: now, id: { lt: ITEM_ID } }] },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 2,
+    })
+  })
+
+  it.each(["wants", "owns"])("rejects a missing or other user's cursor in %s", async (resource) => {
+    const model = resource === "wants" ? database.want : database.own
+    model.findFirst.mockResolvedValue(null)
+    const response = await request(app).get(`/api/${resource}?category=outer&cursor=${ITEM_ID}`).set("Authorization", authorization)
+    expect(response.status).toBe(400)
+    expect(response.body.error.code).toBe("INVALID_CURSOR")
+    expect(model.findFirst).toHaveBeenCalledWith({ where: { userId: USER_ID, category: "outer", id: ITEM_ID } })
+    expect(model.findMany).not.toHaveBeenCalled()
+  })
+
+  it.each(["limit=0", "limit=101", "limit=1.5", "limit=no", "cursor=invalid"])("rejects invalid pagination %s", async (query) => {
+    const response = await request(app).get(`/api/wants?${query}`).set("Authorization", authorization)
+    expect(response.status).toBe(400)
+    expect(database.want.findMany).not.toHaveBeenCalled()
+  })
+
   it("atomically marks a pending want bought and creates an owned item", async () => {
     database.want.updateMany.mockResolvedValue({ count: 1 })
     database.want.findUniqueOrThrow.mockResolvedValue(want({ status: "BOUGHT", url: "https://example.com/shirt", note: "탑텐" }))
@@ -316,7 +395,9 @@ describe("wardrobe API", () => {
       .post(`/api/wants/${ITEM_ID}/buy`)
       .set("Authorization", authorization)
 
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(201)
+    expect(response.headers.location).toBe(`/api/owns/${OWN_ID}`)
+    expect(response.body.created).toBe(true)
     expect(response.body.want.status).toBe("bought")
     expect(response.body.own).toMatchObject({ source: "bought", fromWantId: ITEM_ID })
     expect(database.$transaction).toHaveBeenCalledOnce()

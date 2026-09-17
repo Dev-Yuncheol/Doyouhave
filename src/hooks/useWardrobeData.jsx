@@ -7,7 +7,7 @@ import {
 import { toast } from "sonner"
 import { useSession } from "@/hooks/useSession"
 import { WardrobeDataContext } from "@/hooks/wardrobe-data-context"
-import { apiRequest } from "@/lib/api"
+import { apiRequest, fetchCollection } from "@/lib/api"
 
 const SAVE_ERROR = "저장하지 못했습니다. 다시 시도해 주세요."
 const EMPTY_LIST = []
@@ -38,11 +38,12 @@ export function WardrobeDataProvider({ children }) {
 
       try {
         const [wantResult, ownResult] = await Promise.all([
-          apiRequest("/wants", { signal: controller.signal }),
-          apiRequest("/owns", { signal: controller.signal }),
+          fetchCollection("/wants", "wants", { signal: controller.signal }),
+          fetchCollection("/owns", "owns", { signal: controller.signal }),
         ])
-        setWants(wantResult.wants)
-        setOwns(ownResult.owns)
+        if (controller.signal.aborted) return
+        setWants(wantResult)
+        setOwns(ownResult)
         setDataUserId(user.id)
       } catch (error) {
         if (error.name !== "AbortError") setLoadError(error.message)
@@ -101,6 +102,7 @@ export function WardrobeDataProvider({ children }) {
         const result = await apiRequest(`/wants/${id}/buy`, { method: "POST" })
         setWants((current) => current.map((item) => item.id === id ? result.want : item))
         setOwns((current) => [result.own, ...current.filter((item) => item.id !== result.own.id)])
+        toast.success(result.created ? "보유 의류에 담았어요" : "이미 담겨 있어요")
         return result.want
       }),
       createOwn: (payload) => runMutation(async () => {

@@ -84,7 +84,7 @@ Vite가 출력한 주소를 브라우저에서 열고, API 상태는 `http://loc
 | `GET`, `PATCH`, `DELETE` | `/api/wants/:id` | 구매 후보 상세·수정·삭제 |
 | `POST` | `/api/wants/:id/buy` | 구매 완료 및 보유 의류 생성 |
 | `GET`, `POST` | `/api/owns` | 보유 의류 목록·생성 |
-| `PATCH`, `DELETE` | `/api/owns/:id` | 보유 의류 수정·삭제 |
+| `GET`, `PATCH`, `DELETE` | `/api/owns/:id` | 보유 의류 상세·수정·삭제 |
 
 요청·응답 스키마와 오류 코드는 Swagger UI 또는 [OpenAPI 정의](./server/openapi.js)에서 확인할 수 있습니다.
 
@@ -138,3 +138,13 @@ npx vercel deploy --prod
 | [TASK.md](./TASK.md) | 구현 단계 |
 | [design-system.html](./design-system.html) | 스타일 가이드 |
 | [app-preview.html](./app-preview.html) | 앱 셸 미리보기 |
+
+### Issue #2 리뷰 반영
+
+- 구매 완료 후보는 직접 삭제할 수 없습니다(409). 내 옷장에서 보유 의류를 삭제하면 연결된 구매 후보도 함께 삭제합니다.
+- 구매 확정 최초 요청은 201과 Location, 재요청은 200을 반환합니다. 본문의 created로 안내 문구를 구분합니다.
+- 목록은 limit(기본 50, 최대 100), cursor를 받고 nextCursor를 반환합니다. 같은 필터로 다음 페이지를 조회하며 없어진 커서는 400입니다. 생성 시각이 같으면 ID 내림차순으로 정렬합니다.
+- 현재 화면은 전체 데이터가 필요한 필터·비슷한 옷 검색을 유지하기 위해 100개 단위로 페이지를 자동 수집합니다. 한 요청의 조회량은 제한되지만 전체 전송량과 브라우저 보관량은 줄지 않습니다.
+- 카테고리·색상은 기존 소문자 값을 보존하는 PostgreSQL enum입니다.
+
+배포 시 Prisma 마이그레이션(20260917090000_item_enums)을 먼저 적용하고 새 서버를 배포합니다. SQL은 트랜잭션으로 실행되며 허용되지 않은 기존 값이 있으면 전체를 취소합니다. 운영 적용 전 기존 category/color 값과 백업을 확인하세요. 로컬 검증만으로 운영 DB에 자동 적용되지는 않습니다.

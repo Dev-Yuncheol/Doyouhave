@@ -219,35 +219,44 @@ export function WantDetailPage() {
           </>
         ) : null}
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              className="mt-auto text-destructive hover:text-destructive"
-            >
-              이 후보 삭제
+        {want.status === "bought" ? (
+          <div className="mt-auto space-y-2">
+            <p className="text-sm text-muted-foreground">구매한 의류는 내 옷장에서 삭제해 주세요.</p>
+            <Button variant="outline" className="w-full" asChild>
+              <Link to="/owns">내 옷장에서 보기</Link>
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>이 후보를 지울까요?</AlertDialogTitle>
-              <AlertDialogDescription>
-                목록에서 사라집니다. 이미 남긴 보유는 그대로입니다.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="grid grid-cols-2 gap-2">
-              <AlertDialogCancel className="h-10 w-full">취소</AlertDialogCancel>
-              <AlertDialogAction
-                variant="destructive"
-                className="h-10 w-full"
-                onClick={handleDelete}
+          </div>
+        ) : (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                className="mt-auto text-destructive hover:text-destructive"
               >
-                삭제
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                이 후보 삭제
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>이 후보를 지울까요?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  구매 후보 목록에서 사라집니다. 직접 등록한 보유 의류는 그대로입니다.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="grid grid-cols-2 gap-2">
+                <AlertDialogCancel className="h-10 w-full">취소</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  className="h-10 w-full"
+                  onClick={handleDelete}
+                >
+                  삭제
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     </div>
   )

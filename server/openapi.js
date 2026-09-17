@@ -13,6 +13,20 @@ const idParameter = {
   schema: { type: "string", format: "uuid" },
 }
 
+const paginationParameters = [
+  { name: "limit", in: "query", schema: { type: "integer", minimum: 1, maximum: 100, default: 50 } },
+  { name: "cursor", in: "query", description: "이전 응답의 nextCursor. 동일 사용자와 필터 안에서 사용하며 삭제된 커서는 400을 반환합니다.", schema: { type: "string", format: "uuid" } },
+]
+const nextCursorProperty = { type: ["string", "null"], format: "uuid" }
+const purchaseResult = {
+  type: "object", required: ["want", "own", "created"],
+  properties: {
+    want: { $ref: "#/components/schemas/Want" },
+    own: { $ref: "#/components/schemas/Own" },
+    created: { type: "boolean" },
+  },
+}
+
 const itemProperties = {
   url: { type: ["string", "null"], format: "uri", maxLength: 2048 },
   price: { type: ["integer", "null"], minimum: 0, maximum: 2147483647 },
@@ -123,13 +137,14 @@ export const openApiDocument = {
       get: {
         tags: ["Wants"], summary: "구매 후보 목록",
         parameters: [
+          ...paginationParameters,
           { name: "status", in: "query", schema: { type: "string", enum: ["pending", "bought", "skipped"] } },
           { name: "category", in: "query", schema: { type: "string", enum: categories } },
         ],
         responses: {
           200: jsonResponse("후보 목록", {
-            type: "object", required: ["wants"],
-            properties: { wants: { type: "array", items: { $ref: "#/components/schemas/Want" } } },
+            type: "object", required: ["wants", "nextCursor"],
+            properties: { wants: { type: "array", items: { $ref: "#/components/schemas/Want" } }, nextCursor: nextCursorProperty },
           }),
           ...errorResponses,
         },
@@ -173,10 +188,12 @@ export const openApiDocument = {
       },
       delete: {
         tags: ["Wants"], summary: "구매 후보 삭제", parameters: [idParameter],
+        description: "구매 완료 후보는 409로 거절합니다. 연결된 보유 의류에서 삭제해야 합니다.",
         responses: {
           204: { description: "삭제 완료" },
           400: errorResponses[400], 401: errorResponses[401],
           404: { $ref: "#/components/responses/NotFound" },
+          409: { $ref: "#/components/responses/Conflict" },
         },
       },
     },
@@ -185,13 +202,11 @@ export const openApiDocument = {
         tags: ["Wants"], summary: "구매 완료 처리", description: "후보를 구매 완료로 바꾸고 보유 의류를 원자적으로 생성합니다.",
         parameters: [idParameter],
         responses: {
-          200: jsonResponse("구매 완료", {
-            type: "object", required: ["want", "own"],
-            properties: {
-              want: { $ref: "#/components/schemas/Want" },
-              own: { $ref: "#/components/schemas/Own" },
-            },
-          }),
+          200: jsonResponse("이미 구매 완료됨 (created: false)", purchaseResult),
+          201: {
+            ...jsonResponse("보유 의류 생성 완료 (created: true)", purchaseResult),
+            headers: { Location: { description: "생성된 보유 의류 주소", schema: { type: "string", example: "/api/owns/00000000-0000-4000-8000-000000000001" } } },
+          },
           ...errorResponses,
           404: { $ref: "#/components/responses/NotFound" },
           409: { $ref: "#/components/responses/Conflict" },
@@ -202,13 +217,14 @@ export const openApiDocument = {
       get: {
         tags: ["Owns"], summary: "보유 의류 목록",
         parameters: [
+          ...paginationParameters,
           { name: "category", in: "query", schema: { type: "string", enum: categories } },
           { name: "color", in: "query", schema: { type: "string", enum: colors } },
         ],
         responses: {
           200: jsonResponse("보유 목록", {
-            type: "object", required: ["owns"],
-            properties: { owns: { type: "array", items: { $ref: "#/components/schemas/Own" } } },
+            type: "object", required: ["owns", "nextCursor"],
+            properties: { owns: { type: "array", items: { $ref: "#/components/schemas/Own" } }, nextCursor: nextCursorProperty },
           }),
           ...errorResponses,
         },
@@ -226,6 +242,14 @@ export const openApiDocument = {
       },
     },
     "/api/owns/{id}": {
+      get: {
+        tags: ["Owns"], summary: "보유 의류 상세", parameters: [idParameter],
+        responses: {
+          200: jsonResponse("보유 상세", { type: "object", required: ["own"], properties: { own: { $ref: "#/components/schemas/Own" } } }),
+          ...errorResponses,
+          404: { $ref: "#/components/responses/NotFound" },
+        },
+      },
       patch: {
         tags: ["Owns"], summary: "보유 의류 수정", parameters: [idParameter],
         requestBody: jsonBody({ $ref: "#/components/schemas/UpdateOwn" }),

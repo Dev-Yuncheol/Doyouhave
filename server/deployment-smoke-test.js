@@ -86,7 +86,7 @@ try {
   assert.equal(manualOwn.payload.own.source, "manual")
 
   const bought = await api(`/api/wants/${wantId}/buy`, { method: "POST" })
-  assert.equal(bought.response.status, 200)
+  assert.equal(bought.response.status, 201)
   assert.equal(bought.payload.want.status, "bought")
   assert.equal(bought.payload.own.source, "bought")
   assert.equal(bought.payload.own.fromWantId, wantId)
