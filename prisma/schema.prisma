@@ -39,13 +39,14 @@ enum ItemColor {
 }
 
 model User {
-  id           String   @id @default(uuid()) @db.Uuid
-  email        String   @unique @db.VarChar(320)
-  passwordHash String   @db.VarChar(255)
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
-  wants        Want[]
-  owns         Own[]
+  id             String   @id @default(uuid()) @db.Uuid
+  email          String   @unique @db.VarChar(320)
+  passwordHash   String?  @db.VarChar(255)
+  supabaseUserId String?  @unique @db.Uuid
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+  wants          Want[]
+  owns           Own[]
 }
 
 model Want {

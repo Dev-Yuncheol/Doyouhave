@@ -47,6 +47,10 @@ export function SessionProvider({ children }) {
       pending,
       restoring,
       isLoggedIn: Boolean(user),
+      acceptSession(result) {
+        saveAccessToken(result.token)
+        setUser(result.user)
+      },
       async login(payload) {
         setPending(true)
         try {

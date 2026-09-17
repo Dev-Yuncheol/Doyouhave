@@ -13,6 +13,7 @@ export function createApp({
   jwtSecret,
   bcryptRounds = 12,
   passwordService,
+  googleTokenVerifier,
   authRateLimiters = createAuthRateLimiters({
     enabled: process.env.NODE_ENV !== "test",
   }),
@@ -59,6 +60,7 @@ export function createApp({
       jwtSecret,
       bcryptRounds,
       passwordService,
+      googleTokenVerifier,
       rateLimiters: authRateLimiters,
     }),
   )

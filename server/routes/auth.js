@@ -6,6 +6,7 @@ import { signAccessToken } from "../lib/jwt.js"
 import { publicUserSelect, serializeUser } from "../lib/user.js"
 import { createAuthenticate } from "../middleware/authenticate.js"
 import { validateBody } from "../middleware/validate.js"
+import { verifyGoogleAccessToken } from "../lib/google-auth.js"
 
 const emailSchema = z
   .string({ error: "이메일을 입력해 주세요." })
@@ -59,6 +60,7 @@ export function createAuthRouter({
   bcryptRounds,
   passwordService = bcrypt,
   rateLimiters,
+  googleTokenVerifier = verifyGoogleAccessToken,
 }) {
   const router = Router()
   const authenticate = createAuthenticate({ database, jwtSecret })
@@ -110,13 +112,55 @@ export function createAuthRouter({
       const { email, password } = request.validatedBody
       const user = await database.user.findUnique({ where: { email } })
 
-      if (!user || !(await passwordService.compare(password, user.passwordHash))) {
+      if (!user?.passwordHash || !(await passwordService.compare(password, user.passwordHash))) {
         throw invalidCredentials()
       }
 
       response.json(authResponse(user, jwtSecret))
     },
   )
+
+  router.post("/google", rateLimiters.login, validateBody(z.strictObject({
+    accessToken: z.string().min(1).max(16384),
+    password: loginPasswordSchema.optional(),
+  })), async (request, response) => {
+    const { accessToken, password } = request.validatedBody
+    const identity = await googleTokenVerifier(accessToken)
+    const where = { supabaseUserId: identity.id }
+    let user = await database.user.findUnique({ where })
+    if (!user) {
+      const existing = await database.user.findUnique({ where: { email: identity.email } })
+      if (existing) {
+        if (!password) {
+          throw new AppError(409, "GOOGLE_LINK_REQUIRED", "같은 이메일의 계정이 있습니다. 기존 비밀번호를 입력하면 구글 계정과 연결됩니다.")
+        }
+        if (!existing.passwordHash || !(await passwordService.compare(password, existing.passwordHash))) {
+          throw invalidCredentials()
+        }
+        // Conditional update prevents a concurrent request from replacing an identity.
+        const result = await database.user.updateMany({
+          where: { id: existing.id, supabaseUserId: null },
+          data: { supabaseUserId: identity.id },
+        })
+        user = await database.user.findUnique({ where })
+        if (!user || (result.count !== 1 && user.id !== existing.id)) {
+          throw new AppError(409, "GOOGLE_LINK_CONFLICT", "이미 다른 구글 계정과 연결되어 있습니다.")
+        }
+      } else {
+        try {
+          user = await database.user.create({
+            data: { email: identity.email, supabaseUserId: identity.id },
+            select: publicUserSelect,
+          })
+        } catch (error) {
+          if (error?.code !== "P2002") throw error
+          user = await database.user.findUnique({ where })
+          if (!user) throw new AppError(409, "GOOGLE_LINK_REQUIRED", "같은 이메일의 계정이 있습니다. 기존 비밀번호를 입력해 주세요.")
+        }
+      }
+    }
+    response.json(authResponse(user, jwtSecret))
+  })
 
   router.get("/me", authenticate, (request, response) => {
     response.json({ user: serializeUser(request.user) })

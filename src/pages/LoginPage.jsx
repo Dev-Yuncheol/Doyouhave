@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useSession } from "@/hooks/useSession"
 import { APP_NAME } from "@/lib/constants"
+import { startGoogleLogin } from "@/lib/google-auth"
 
 export function LoginPage() {
   const { isLoggedIn, login, signUp, pending } = useSession()
@@ -23,6 +24,7 @@ export function LoginPage() {
   const [password, setPassword] = useState("")
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState("")
+  const [googlePending, setGooglePending] = useState(false)
 
   if (isLoggedIn) return <Navigate to="/" replace />
 
@@ -113,11 +115,30 @@ export function LoginPage() {
           </Field>
         </FieldGroup>
 
-        <Button type="submit" className="h-10 w-full" disabled={pending}>
+        <Button type="submit" className="h-10 w-full" disabled={pending || googlePending}>
           {pending ? <Spinner data-icon="inline-start" /> : null}
           {mode === "signup" ? "회원가입" : "로그인"}
         </Button>
       </form>
+
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <span className="h-px flex-1 bg-border" />또는<span className="h-px flex-1 bg-border" />
+      </div>
+      <Button variant="outline" className="h-10 w-full" disabled={pending || googlePending}
+        onClick={async () => {
+          setFormError("")
+          setGooglePending(true)
+          try { await startGoogleLogin() }
+          catch (error) { setFormError(error.message); setGooglePending(false) }
+        }}>
+        {googlePending ? <Spinner /> : <svg aria-hidden="true" viewBox="0 0 48 48" className="size-4">
+          <path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11a9.4 9.4 0 0 1-4.1 6.2v5h6.6c3.9-3.6 6.1-8.8 6.1-14.9Z" />
+          <path fill="#34A853" d="M24 44c5.4 0 9.9-1.8 13.2-4.8l-6.6-5c-1.8 1.2-4 1.9-6.6 1.9-5.2 0-9.6-3.5-11.2-8.2H6v5.2A20 20 0 0 0 24 44Z" />
+          <path fill="#FBBC05" d="M12.8 27.9a12 12 0 0 1 0-7.8v-5.2H6a20 20 0 0 0 0 18.2l6.8-5.2Z" />
+          <path fill="#EA4335" d="M24 11.9c2.9 0 5.5 1 7.5 2.9l5.6-5.6A19 19 0 0 0 24 4 20 20 0 0 0 6 14.9l6.8 5.2A11.8 11.8 0 0 1 24 11.9Z" />
+        </svg>}
+        Google로 계속하기
+      </Button>
 
       <p className="text-center text-[13px] text-muted-foreground">
         {mode === "login" ? (

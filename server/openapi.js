@@ -63,6 +63,25 @@ export const openApiDocument = {
     { name: "Owns", description: "보유 의류" },
   ],
   paths: {
+    "/api/auth/google": {
+      post: {
+        tags: ["Auth"], summary: "Supabase 구글 인증 및 기존 계정 연결", security: [],
+        requestBody: jsonBody({
+          type: "object", additionalProperties: false, required: ["accessToken"],
+          properties: {
+            accessToken: { type: "string", minLength: 1, maxLength: 16384, description: "Supabase OAuth access token" },
+            password: { type: "string", description: "GOOGLE_LINK_REQUIRED 응답 시 기존 계정 비밀번호 (최대 72 UTF-8 바이트)" },
+          },
+        }),
+        responses: {
+          200: jsonResponse("로그인 완료", { $ref: "#/components/schemas/AuthResult" }),
+          ...errorResponses,
+          409: { description: "GOOGLE_LINK_REQUIRED: 비밀번호 확인 필요 / GOOGLE_LINK_CONFLICT: 다른 계정 연결됨" },
+          429: { $ref: "#/components/responses/RateLimited" },
+          503: { description: "Supabase 설정 누락 또는 인증 서비스 연결 실패" },
+        },
+      },
+    },
     "/api/health": {
       get: {
         tags: ["System"],

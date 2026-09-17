@@ -8,6 +8,7 @@ import { HomePage } from "@/pages/HomePage"
 import { LandingPage } from "@/pages/LandingPage"
 import { LandingPageV2 } from "@/pages/LandingPageV2"
 import { LoginPage } from "@/pages/LoginPage"
+import { AuthCallbackPage } from "@/pages/AuthCallbackPage"
 import { NewWantPage } from "@/pages/NewWantPage"
 import { OwnsPage } from "@/pages/OwnsPage"
 import { WantDetailPage } from "@/pages/WantDetailPage"
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/" element={<RootPage />} />
             <Route path="/v1" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
             <Route element={<AuthGate />}>
               <Route path="/wants/new" element={<NewWantPage />} />
               <Route path="/wants/:id" element={<WantDetailPage />} />

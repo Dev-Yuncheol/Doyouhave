@@ -10,7 +10,7 @@
 
 ## 주요 흐름
 
-1. 이메일과 비밀번호로 회원가입 또는 로그인합니다.
+1. 이메일과 비밀번호 또는 Google로 회원가입·로그인합니다.
 2. 구매 후보의 이름, 카테고리, 색상과 선택 정보를 입력합니다.
 3. 같은 카테고리·색상의 보유 의류가 있는지 확인합니다.
 4. 후보를 `샀다` 또는 `안 샀다`로 처리합니다.
@@ -57,6 +57,30 @@ Vite가 출력한 주소를 브라우저에서 열고, API 상태는 `http://loc
 
 ## 명령어
 
+### Google 로그인 설정
+
+Supabase Google provider를 활성화한 뒤 아래 공개 설정을 로컬 `.env`와 배포 환경에 모두 추가합니다.
+`VITE_` 값은 빌드 시 반영되므로 배포 환경 수정 후 재빌드가 필요합니다.
+
+```dotenv
+SUPABASE_URL="https://PROJECT_REF.supabase.co"
+SUPABASE_PUBLISHABLE_KEY="sb_publishable_..."
+VITE_SUPABASE_URL="https://PROJECT_REF.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_..."
+```
+
+- Supabase Authentication → URL Configuration → Redirect URLs에 `http://localhost:5173/auth/callback`과 `https://doyouhave.vercel.app/auth/callback`을 등록합니다. 다른 포트·프리뷰 도메인은 정확한 URL을 별도로 등록합니다.
+- Google Cloud의 승인된 리디렉션 URI는 Supabase의 `https://PROJECT_REF.supabase.co/auth/v1/callback`입니다.
+- Google Client Secret은 Supabase에만 보관하고 앱 환경변수에는 publishable key만 사용합니다.
+- `npm run db:deploy`로 `20260917100000_google_auth` 마이그레이션을 적용한 뒤 새 API를 실행합니다.
+- 신규 Google 계정은 비밀번호 없이 생성합니다. 같은 이메일의 기존 계정은 기존 비밀번호를 한 번 확인한 뒤 연결하며 기존 사용자 ID와 옷장 데이터를 유지합니다.
+- 프론트는 PKCE로 받은 토큰을 `/api/auth/google`에 전송합니다. 서버는 Supabase `getUser`로 검증하고 Google identity와 이메일 확인 여부를 검사한 뒤 기존 앱 JWT를 발급합니다. 연결 후에는 이메일이 바뀌어도 Supabase 사용자 ID로 식별합니다.
+- 계정 삭제는 기존과 같이 앱의 User/옷장 데이터를 삭제합니다. Supabase Auth 사용자 자체는 삭제하지 않으며, 이후 Google로 로그인하면 새 앱 계정이 생성됩니다.
+
+[공식 Google OAuth 설정 문서](https://supabase.com/docs/guides/auth/social-login/auth-google)
+
+### 실행 명령
+
 | 명령 | 설명 |
 |---|---|
 | `npm run dev` | Vite 프론트 개발 서버 |
@@ -79,6 +103,7 @@ Vite가 출력한 주소를 브라우저에서 열고, API 상태는 `http://loc
 | `GET` | `/api/health` | API 및 DB 연결 상태 확인 |
 | `POST` | `/api/auth/signup` | 회원가입 |
 | `POST` | `/api/auth/login` | 로그인 |
+| `POST` | `/api/auth/google` | 구글 인증 검증·앱 JWT 발급·기존 계정 연결 |
 | `GET`, `DELETE` | `/api/auth/me` | 현재 사용자 조회·본인 계정 삭제 |
 | `GET`, `POST` | `/api/wants` | 구매 후보 목록·생성 |
 | `GET`, `PATCH`, `DELETE` | `/api/wants/:id` | 구매 후보 상세·수정·삭제 |

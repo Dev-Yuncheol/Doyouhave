@@ -19,3 +19,11 @@ export function login(credentials) {
 export function getMe(signal) {
   return apiRequest("/auth/me", { signal })
 }
+
+export function loginWithGoogle(accessToken, password) {
+  return apiRequest("/auth/google", {
+    method: "POST",
+    body: { accessToken, ...(password ? { password } : {}) },
+    auth: false,
+  })
+}
