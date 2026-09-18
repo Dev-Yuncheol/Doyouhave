@@ -30,25 +30,13 @@ const PLANS = [
   {
     name: "무료",
     price: "0원",
-    hint: "기한 없음 · 후보, 겹침, 샀다/안 샀다",
+    hint: "누적 50회 저장 · 항목별 30일 보관",
     featured: false,
   },
   {
-    name: "Pro 월",
-    price: "2,900원",
-    hint: "한 시즌만 쓸 때",
-    featured: false,
-  },
-  {
-    name: "Pro 연",
-    price: "19,900원",
-    hint: "주력 · 월 환산 약 1,660원",
-    featured: true,
-  },
-  {
-    name: "Pro 평생",
-    price: "69,000원",
-    hint: "한 번만 · 구독 없음",
+    name: "유료 회원",
+    price: "준비 중",
+    hint: "저장 횟수·보관 기간 제한 없음",
     featured: false,
   },
 ]
@@ -153,8 +141,7 @@ export function LandingPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-base font-semibold">확인은 무료입니다</h2>
           <p className="text-[13px] text-muted-foreground">
-            등록을 팔지 않습니다. Pro는 아낀 금액과 통계입니다. 14일 체험, 카드
-            없습니다.
+            일반 회원은 누적 50회 저장으로 체험할 수 있습니다. 각 항목은 저장일부터 30일 보관됩니다.
           </p>
           <Card className="py-0 shadow-none ring-1 ring-border">
             <CardContent className="divide-y divide-border px-0 py-0">
@@ -180,7 +167,7 @@ export function LandingPage() {
             </CardContent>
           </Card>
           <p className="text-[13px] text-muted-foreground">
-            옷 한 벌 값을 한 번만 아껴도 본전입니다. 결제는 아직 없습니다.
+            삭제해도 체험 횟수는 복구되지 않습니다. 결제 기능은 준비 중입니다.
           </p>
         </section>
       </div>

@@ -183,7 +183,7 @@ export function LandingPageV2() {
                 variant="secondary"
                 className="bg-accent text-accent-foreground"
               >
-                기본 요금제
+                일반 회원 체험
               </Badge>
               <div>
                 <p className="text-lg font-semibold">무료</p>
@@ -198,12 +198,13 @@ export function LandingPageV2() {
                   </span>
                   후보 추가, 겹침 확인, 샀다/안 샀다
                 </p>
+                <p className="mt-2 text-[13px] text-muted-foreground">누적 50회 저장 · 항목별 30일 보관</p>
+                <p className="mt-1 text-[13px] text-muted-foreground">삭제해도 체험 횟수는 복구되지 않습니다.</p>
               </div>
             </CardContent>
           </Card>
           <p className="text-[13px] text-muted-foreground">
-            <span className="font-semibold text-primary">Pro</span> 요금제도
-            준비되어 있어요. 더 많은 기능이 필요할 때 선택해 보세요.
+            유료 회원은 저장 횟수와 보관 기간 제한이 없습니다. 결제 기능은 준비 중입니다.
           </p>
           <img
             src={imgPrice}

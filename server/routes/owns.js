@@ -1,4 +1,5 @@
 import { Router } from "express"
+import { activeItems, createSavedItem, idempotencyKey, lockMember } from "../lib/membership.js"
 import { listPage } from "../lib/pagination.js"
 import {
   createOwnSchema,
@@ -23,7 +24,8 @@ export function createOwnsRouter({ database, jwtSecret }) {
 
   router.post("/", validateBody(createOwnSchema), async (request, response) => {
     const data = normalizeItemDetails(request.validatedBody)
-    const own = await database.own.create({
+    const result = await createSavedItem(database, {
+      userId: request.user.id, model: "own", key: idempotencyKey(request),
       data: {
         ...data,
         source: "MANUAL",
@@ -31,7 +33,7 @@ export function createOwnsRouter({ database, jwtSecret }) {
       },
     })
 
-    response.status(201).json({ own: serializeOwn(own) })
+    response.status(result.created ? 201 : 200).json({ own: serializeOwn(result.item), membership: result.membership })
   })
 
   router.get("/", validateQuery(ownQuerySchema), async (request, response) => {
@@ -40,6 +42,7 @@ export function createOwnsRouter({ database, jwtSecret }) {
       database.own,
       {
         userId: request.user.id,
+        ...activeItems(),
         ...(category ? { category } : {}),
         ...(color ? { color } : {}),
       },
@@ -51,7 +54,7 @@ export function createOwnsRouter({ database, jwtSecret }) {
 
   router.get("/:id", validateParams(idParamsSchema), async (request, response) => {
     const own = await database.own.findFirst({
-      where: { id: request.validatedParams.id, userId: request.user.id },
+      where: { id: request.validatedParams.id, userId: request.user.id, ...activeItems() },
     })
     if (!own) throw notFound("보유 의류")
     response.json({ own: serializeOwn(own) })
@@ -65,6 +68,7 @@ export function createOwnsRouter({ database, jwtSecret }) {
       const where = {
         id: request.validatedParams.id,
         userId: request.user.id,
+        ...activeItems(),
       }
       const existing = await database.own.findFirst({ where })
 
@@ -101,6 +105,7 @@ export function createOwnsRouter({ database, jwtSecret }) {
     validateParams(idParamsSchema),
     async (request, response) => {
       await database.$transaction(async (transaction) => {
+        await lockMember(transaction, request.user.id)
         const where = {
           id: request.validatedParams.id,
           userId: request.user.id,

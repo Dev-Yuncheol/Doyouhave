@@ -21,6 +21,8 @@ import { ColorSwatch } from "@/components/ColorSwatch"
 import { DataLoadState } from "@/components/DataLoadState"
 import { SimilarOwns } from "@/components/SimilarOwns"
 import { StatusBadge } from "@/components/StatusBadge"
+import { MembershipStatus, RetentionLabel } from "@/components/MembershipStatus"
+import { useWardrobeData } from "@/hooks/useWardrobeData"
 import { useOwns } from "@/hooks/useOwns"
 import { useWants } from "@/hooks/useWants"
 import { categoryLabel, colorLabel } from "@/lib/constants"
@@ -31,6 +33,7 @@ function formatPrice(price) {
 }
 
 export function WantDetailPage() {
+  const { membership } = useWardrobeData()
   const { id } = useParams()
   const navigate = useNavigate()
   const { getWant, markBought, markSkipped, deleteWant, saving, loading, loadError, reload } =
@@ -130,6 +133,7 @@ export function WantDetailPage() {
         className="flex flex-1 flex-col gap-4 px-5 pt-4"
         style={{ paddingBottom: "calc(20px + env(safe-area-inset-bottom))" }}
       >
+        <MembershipStatus />
         {similarOwns.length > 0 ? <SimilarOwns owns={similarOwns} /> : null}
 
         <div className="flex flex-wrap items-center gap-2">
@@ -141,6 +145,7 @@ export function WantDetailPage() {
             {categoryLabel(want.category, want.categoryDetail)}
           </Badge>
           <StatusBadge status={want.status} />
+          <RetentionLabel expiresAt={want.expiresAt} />
         </div>
 
         <div>
@@ -188,7 +193,7 @@ export function WantDetailPage() {
               type="button"
               variant="secondary"
               className="h-10 w-full"
-              disabled={busy}
+              disabled={busy || membership?.canSave === false}
               onClick={handleAddOwn}
             >
               {ownSaving ? <Spinner data-icon="inline-start" /> : null}

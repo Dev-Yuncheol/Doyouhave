@@ -5,6 +5,7 @@ import { openApiDocument } from "./openapi.js"
 import { createAuthRouter } from "./routes/auth.js"
 import { createOwnsRouter } from "./routes/owns.js"
 import { createWantsRouter } from "./routes/wants.js"
+import { createCleanupHandler } from "./routes/cleanup.js"
 import { errorHandler } from "./middleware/error-handler.js"
 import { createAuthRateLimiters } from "./middleware/rate-limit.js"
 
@@ -14,6 +15,7 @@ export function createApp({
   bcryptRounds = 12,
   passwordService,
   googleTokenVerifier,
+  cronSecret = process.env.CRON_SECRET,
   authRateLimiters = createAuthRateLimiters({
     enabled: process.env.NODE_ENV !== "test",
   }),
@@ -23,6 +25,7 @@ export function createApp({
   app.disable("x-powered-by")
   app.set("trust proxy", 1)
   app.use(express.json({ limit: "100kb" }))
+  app.get("/api/cron/cleanup-expired", createCleanupHandler({ database, secret: cronSecret }))
 
   app.get("/api/health", async (_request, response) => {
     try {

@@ -18,6 +18,23 @@ const paginationParameters = [
   { name: "cursor", in: "query", description: "이전 응답의 nextCursor. 동일 사용자와 필터 안에서 사용하며 삭제된 커서는 400을 반환합니다.", schema: { type: "string", format: "uuid" } },
 ]
 const nextCursorProperty = { type: ["string", "null"], format: "uuid" }
+const saveKeyParameter = {
+  name: "Idempotency-Key", in: "header", required: false,
+  description: "같은 저장 재시도에는 같은 키를 사용합니다. 다른 내용에 재사용하면 409입니다. 생략하면 매번 새 저장입니다.",
+  schema: { type: "string", pattern: "^[A-Za-z0-9_-]{1,128}$" },
+}
+const saveResponses = (name, schema) => {
+  const result = { type: "object", required: [name, "membership"], properties: {
+    [name]: { $ref: `#/components/schemas/${schema}` }, membership: { $ref: "#/components/schemas/Membership" },
+  } }
+  return {
+    200: jsonResponse("동일 저장 요청 재시도", result),
+    201: jsonResponse("신규 저장 성공", result),
+    403: jsonResponse("TRIAL_SAVE_LIMIT_REACHED: 일반 회원 누적 50회 소진", { $ref: "#/components/schemas/Error" }),
+    409: jsonResponse("IDEMPOTENCY_CONFLICT 또는 SAVE_NO_LONGER_AVAILABLE", { $ref: "#/components/schemas/Error" }),
+    ...errorResponses,
+  }
+}
 const purchaseResult = {
   type: "object", required: ["want", "own", "created"],
   properties: {
@@ -170,14 +187,9 @@ export const openApiDocument = {
       },
       post: {
         tags: ["Wants"], summary: "구매 후보 생성",
+        parameters: [saveKeyParameter],
         requestBody: jsonBody({ $ref: "#/components/schemas/CreateWant" }),
-        responses: {
-          201: jsonResponse("생성 완료", {
-            type: "object", required: ["want"],
-            properties: { want: { $ref: "#/components/schemas/Want" } },
-          }),
-          ...errorResponses,
-        },
+        responses: saveResponses("want", "Want"),
       },
     },
     "/api/wants/{id}": {
@@ -250,14 +262,9 @@ export const openApiDocument = {
       },
       post: {
         tags: ["Owns"], summary: "보유 의류 생성",
+        parameters: [saveKeyParameter],
         requestBody: jsonBody({ $ref: "#/components/schemas/CreateOwn" }),
-        responses: {
-          201: jsonResponse("생성 완료", {
-            type: "object", required: ["own"],
-            properties: { own: { $ref: "#/components/schemas/Own" } },
-          }),
-          ...errorResponses,
-        },
+        responses: saveResponses("own", "Own"),
       },
     },
     "/api/owns/{id}": {
@@ -297,9 +304,21 @@ export const openApiDocument = {
       bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
     },
     schemas: {
-      User: {
-        type: "object", required: ["id", "email", "createdAt", "updatedAt"],
+      Membership: {
+        type: "object", required: ["plan", "trialSaveCount", "saveLimit", "savesRemaining", "retentionDays", "canSave"],
         properties: {
+          plan: { type: "string", enum: ["FREE", "PAID"] },
+          trialSaveCount: { type: "integer", minimum: 0, description: "삭제/만료/유료 전환으로 초기화되지 않는 누적 체험 저장 횟수" },
+          saveLimit: { type: ["integer", "null"], enum: [50, null] },
+          savesRemaining: { type: ["integer", "null"], minimum: 0 },
+          retentionDays: { type: ["integer", "null"], enum: [30, null] },
+          canSave: { type: "boolean" },
+        },
+      },
+      User: {
+        type: "object", required: ["id", "email", "createdAt", "updatedAt", "membership"],
+        properties: {
+          membership: { $ref: "#/components/schemas/Membership" },
           id: { type: "string", format: "uuid" }, email: { type: "string", format: "email" },
           createdAt: { type: "string", format: "date-time" }, updatedAt: { type: "string", format: "date-time" },
         },
@@ -345,6 +364,7 @@ export const openApiDocument = {
               id: { type: "string", format: "uuid" }, status: { type: "string", enum: ["pending", "bought", "skipped"] },
               userId: { type: "string", format: "uuid" }, createdAt: { type: "string", format: "date-time" },
               updatedAt: { type: "string", format: "date-time" },
+              expiresAt: { type: ["string", "null"], format: "date-time", description: "보관 만료 시각. null이면 만료 없음." },
             },
           },
         ],
@@ -364,6 +384,7 @@ export const openApiDocument = {
               id: { type: "string", format: "uuid" }, source: { type: "string", enum: ["manual", "bought"] },
               fromWantId: { type: ["string", "null"], format: "uuid" }, userId: { type: "string", format: "uuid" },
               createdAt: { type: "string", format: "date-time" }, updatedAt: { type: "string", format: "date-time" },
+              expiresAt: { type: ["string", "null"], format: "date-time", description: "연결된 구매 후보의 만료일을 그대로 유지합니다." },
             },
           },
         ],

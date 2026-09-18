@@ -38,15 +38,34 @@ enum ItemColor {
   other
 }
 
+enum MembershipPlan {
+  FREE
+  PAID
+}
+
 model User {
-  id             String   @id @default(uuid()) @db.Uuid
-  email          String   @unique @db.VarChar(320)
-  passwordHash   String?  @db.VarChar(255)
-  supabaseUserId String?  @unique @db.Uuid
-  createdAt      DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+  id             String         @id @default(uuid()) @db.Uuid
+  email          String         @unique @db.VarChar(320)
+  passwordHash   String?        @db.VarChar(255)
+  supabaseUserId String?        @unique @db.Uuid
+  plan           MembershipPlan @default(FREE)
+  trialSaveCount Int            @default(0)
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @db.Timestamptz(3)
   wants          Want[]
   owns           Own[]
+  saveRequests   SaveRequest[]
+}
+
+// Retain only a request fingerprint and item ID, never expired item content.
+model SaveRequest {
+  userId      String @db.Uuid
+  key         String @db.VarChar(128)
+  fingerprint String @db.VarChar(64)
+  itemId      String @db.Uuid
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, key])
 }
 
 model Want {
@@ -60,6 +79,7 @@ model Want {
   price          Int?
   note           String?      @db.Text
   status         WantStatus   @default(PENDING)
+  expiresAt      DateTime?    @db.Timestamptz(3)
   userId         String       @db.Uuid
   createdAt      DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
@@ -68,6 +88,7 @@ model Want {
 
   @@index([userId, status, createdAt])
   @@index([userId, category])
+  @@index([expiresAt, userId])
 }
 
 model Own {
@@ -82,6 +103,7 @@ model Own {
   colorDetail    String?      @db.VarChar(80)
   source         OwnSource    @default(MANUAL)
   fromWantId     String?      @unique @db.Uuid
+  expiresAt      DateTime?    @db.Timestamptz(3)
   userId         String       @db.Uuid
   createdAt      DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
@@ -90,4 +112,5 @@ model Own {
 
   @@index([userId, category, color])
   @@index([userId, createdAt])
+  @@index([expiresAt, userId])
 }

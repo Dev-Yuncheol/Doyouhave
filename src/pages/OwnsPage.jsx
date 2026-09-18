@@ -6,6 +6,7 @@ import { FilterChips } from "@/components/FilterChips"
 import { OwnManageDialog } from "@/components/OwnManageDialog"
 import { OwnCard } from "@/components/WantCard"
 import { useOwns } from "@/hooks/useOwns"
+import { MembershipStatus } from "@/components/MembershipStatus"
 
 export function OwnsPage() {
   const [category, setCategory] = useState("")
@@ -34,6 +35,7 @@ export function OwnsPage() {
           </p>
         </div>
 
+        <MembershipStatus />
         <FilterChips value={category} onChange={setCategory} />
         <FilterChips type="color" value={color} onChange={setColor} />
 

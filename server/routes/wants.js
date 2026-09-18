@@ -1,4 +1,5 @@
 import { Router } from "express"
+import { activeItems, createSavedItem, idempotencyKey, lockMember } from "../lib/membership.js"
 import { listPage } from "../lib/pagination.js"
 import { AppError } from "../lib/app-error.js"
 import {
@@ -26,7 +27,8 @@ export function createWantsRouter({ database, jwtSecret }) {
 
   router.post("/", validateBody(createWantSchema), async (request, response) => {
     const data = normalizeItemDetails(request.validatedBody)
-    const want = await database.want.create({
+    const result = await createSavedItem(database, {
+      userId: request.user.id, model: "want", key: idempotencyKey(request),
       data: {
         ...data,
         url: data.url ?? null,
@@ -36,7 +38,7 @@ export function createWantsRouter({ database, jwtSecret }) {
       },
     })
 
-    response.status(201).json({ want: serializeWant(want) })
+    response.status(result.created ? 201 : 200).json({ want: serializeWant(result.item), membership: result.membership })
   })
 
   router.get("/", validateQuery(wantQuerySchema), async (request, response) => {
@@ -45,6 +47,7 @@ export function createWantsRouter({ database, jwtSecret }) {
       database.want,
       {
         userId: request.user.id,
+        ...activeItems(),
         ...(status ? { status: WANT_STATUS_TO_DATABASE[status] } : {}),
         ...(category ? { category } : {}),
       },
@@ -56,7 +59,7 @@ export function createWantsRouter({ database, jwtSecret }) {
 
   router.get("/:id", validateParams(idParamsSchema), async (request, response) => {
     const want = await database.want.findFirst({
-      where: { id: request.validatedParams.id, userId: request.user.id },
+      where: { id: request.validatedParams.id, userId: request.user.id, ...activeItems() },
     })
 
     if (!want) throw notFound("구매 후보")
@@ -72,6 +75,7 @@ export function createWantsRouter({ database, jwtSecret }) {
       const where = {
         id: request.validatedParams.id,
         userId: request.user.id,
+        ...activeItems(),
       }
       const existing = await database.want.findFirst({ where })
 
@@ -152,14 +156,16 @@ export function createWantsRouter({ database, jwtSecret }) {
 
       const result = await database.$transaction(
         async (transaction) => {
+          await lockMember(transaction, userId)
+          const active = activeItems()
           const updated = await transaction.want.updateMany({
-            where: { id: wantId, userId, status: "PENDING" },
+            where: { id: wantId, userId, status: "PENDING", ...active },
             data: { status: "BOUGHT" },
           })
 
           if (updated.count === 0) {
             const existingWant = await transaction.want.findFirst({
-              where: { id: wantId, userId },
+              where: { id: wantId, userId, ...active },
             })
 
             if (!existingWant) throw notFound("구매 후보")
@@ -196,6 +202,7 @@ export function createWantsRouter({ database, jwtSecret }) {
               colorDetail: want.colorDetail,
               source: "BOUGHT",
               fromWantId: want.id,
+              expiresAt: want.expiresAt,
               userId,
             },
           })

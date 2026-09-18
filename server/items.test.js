@@ -51,7 +51,7 @@ function own(overrides = {}) {
 
 function createDatabase() {
   const database = {
-    user: { findUnique: vi.fn(async () => currentUser()), create: vi.fn() },
+    user: { findUnique: vi.fn(async () => currentUser()), create: vi.fn(), update: vi.fn(async () => ({ ...currentUser(), plan: "FREE", trialSaveCount: 1 })) },
     want: {
       create: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), update: vi.fn(),
       updateMany: vi.fn(), findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), deleteMany: vi.fn(),
@@ -132,7 +132,7 @@ describe("wardrobe API", () => {
     })
     expect(listed.status).toBe(200)
     expect(database.want.findMany).toHaveBeenCalledWith({
-      where: { userId: USER_ID, status: "PENDING", category: "outer" },
+      where: { userId: USER_ID, status: "PENDING", category: "outer", AND: expect.any(Array) },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: 51,
     })
@@ -147,7 +147,7 @@ describe("wardrobe API", () => {
 
     expect(response.status).toBe(200)
     expect(database.want.findMany).toHaveBeenCalledWith({
-      where: { userId: USER_ID, status: "PENDING" },
+      where: { userId: USER_ID, status: "PENDING", AND: expect.any(Array) },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: 51,
     })
@@ -198,7 +198,7 @@ describe("wardrobe API", () => {
     expect(created.body.own.source).toBe("manual")
     expect(listed.status).toBe(200)
     expect(database.own.findMany).toHaveBeenCalledWith({
-      where: { userId: USER_ID, category: "outer", color: "black" },
+      where: { userId: USER_ID, category: "outer", color: "black", AND: expect.any(Array) },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: 51,
     })
@@ -345,7 +345,7 @@ describe("wardrobe API", () => {
     const response = await request(app).get(`/api/owns/${OWN_ID}`).set("Authorization", authorization)
     expect(response.status).toBe(200)
     expect(response.body.own.id).toBe(OWN_ID)
-    expect(database.own.findFirst).toHaveBeenCalledWith({ where: { id: OWN_ID, userId: USER_ID } })
+    expect(database.own.findFirst).toHaveBeenCalledWith({ where: { id: OWN_ID, userId: USER_ID, AND: expect.any(Array) } })
     database.own.findFirst.mockResolvedValue(null)
     expect((await request(app).get(`/api/owns/${OWN_ID}`).set("Authorization", authorization)).status).toBe(404)
   })
@@ -365,7 +365,7 @@ describe("wardrobe API", () => {
     expect(last.body.nextCursor).toBeNull()
     expect(last.body[resource][0].id).toBe(OWN_ID)
     expect(model.findMany).toHaveBeenLastCalledWith({
-      where: { userId: USER_ID, OR: [{ createdAt: { lt: now } }, { createdAt: now, id: { lt: ITEM_ID } }] },
+      where: { userId: USER_ID, AND: expect.any(Array), OR: [{ createdAt: { lt: now } }, { createdAt: now, id: { lt: ITEM_ID } }] },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 2,
     })
   })
@@ -376,7 +376,7 @@ describe("wardrobe API", () => {
     const response = await request(app).get(`/api/${resource}?category=outer&cursor=${ITEM_ID}`).set("Authorization", authorization)
     expect(response.status).toBe(400)
     expect(response.body.error.code).toBe("INVALID_CURSOR")
-    expect(model.findFirst).toHaveBeenCalledWith({ where: { userId: USER_ID, category: "outer", id: ITEM_ID } })
+    expect(model.findFirst).toHaveBeenCalledWith({ where: { userId: USER_ID, category: "outer", id: ITEM_ID, AND: expect.any(Array) } })
     expect(model.findMany).not.toHaveBeenCalled()
   })
 

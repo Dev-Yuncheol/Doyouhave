@@ -4,8 +4,11 @@ import { WantForm } from "@/components/WantForm"
 import { DataLoadState } from "@/components/DataLoadState"
 import { useOwns } from "@/hooks/useOwns"
 import { useWants } from "@/hooks/useWants"
+import { MembershipStatus } from "@/components/MembershipStatus"
+import { useWardrobeData } from "@/hooks/useWardrobeData"
 
 export function NewWantPage() {
+  const { membership } = useWardrobeData()
   const navigate = useNavigate()
   const { createWant, saving, loading, loadError, reload } = useWants()
   const { similar } = useOwns()
@@ -32,9 +35,10 @@ export function NewWantPage() {
             이름, 카테고리, 색만 있으면 됩니다.
           </p>
         </div>
+        <MembershipStatus />
         {loading || loadError ? (
           <DataLoadState loading={loading} error={loadError} onRetry={reload} />
-        ) : (
+        ) : membership?.canSave === false ? null : (
           <WantForm
             findSimilar={similar}
             saving={saving}

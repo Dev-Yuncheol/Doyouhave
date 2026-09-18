@@ -8,12 +8,16 @@ import { toast } from "sonner"
 import { useSession } from "@/hooks/useSession"
 import { WardrobeDataContext } from "@/hooks/wardrobe-data-context"
 import { apiRequest, fetchCollection } from "@/lib/api"
+import { createItemSaver } from "@/lib/save-item"
 
 const SAVE_ERROR = "저장하지 못했습니다. 다시 시도해 주세요."
 const EMPTY_LIST = []
 
 export function WardrobeDataProvider({ children }) {
   const { user } = useSession()
+  const [saveItem] = useState(() => createItemSaver())
+  const [membership, setMembership] = useState(null)
+  const [now, setNow] = useState(Date.now)
   const [wants, setWants] = useState([])
   const [owns, setOwns] = useState([])
   const [dataUserId, setDataUserId] = useState(null)
@@ -22,6 +26,16 @@ export function WardrobeDataProvider({ children }) {
   const [saving, setSaving] = useState(false)
   const [loadError, setLoadError] = useState("")
   const [revision, setRevision] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 30_000)
+    const refresh = () => setRevision((current) => current + 1)
+    window.addEventListener("focus", refresh)
+    return () => {
+      clearInterval(timer)
+      window.removeEventListener("focus", refresh)
+    }
+  }, [])
 
   useEffect(() => {
     if (!user) {
@@ -37,13 +51,15 @@ export function WardrobeDataProvider({ children }) {
       setLoadError("")
 
       try {
-        const [wantResult, ownResult] = await Promise.all([
+        const [wantResult, ownResult, session] = await Promise.all([
           fetchCollection("/wants", "wants", { signal: controller.signal }),
           fetchCollection("/owns", "owns", { signal: controller.signal }),
+          apiRequest("/auth/me", { signal: controller.signal }),
         ])
         if (controller.signal.aborted) return
         setWants(wantResult)
         setOwns(ownResult)
+        setMembership(session.user.membership)
         setDataUserId(user.id)
       } catch (error) {
         if (error.name !== "AbortError") setLoadError(error.message)
@@ -63,6 +79,7 @@ export function WardrobeDataProvider({ children }) {
       return await action()
     } catch (error) {
       toast.error(error.message || SAVE_ERROR)
+      if (error.code === "TRIAL_SAVE_LIMIT_REACHED") setRevision((current) => current + 1)
       throw error
     } finally {
       setSaving(false)
@@ -71,13 +88,15 @@ export function WardrobeDataProvider({ children }) {
 
   const hasCurrentUserData = Boolean(user) && dataUserId === user.id
   const isCurrentRequest = Boolean(user) && requestUserId === user.id
-  const visibleWants = hasCurrentUserData ? wants : EMPTY_LIST
-  const visibleOwns = hasCurrentUserData ? owns : EMPTY_LIST
+  const visibleWants = useMemo(() => hasCurrentUserData ? wants.filter((item) => !item.expiresAt || Date.parse(item.expiresAt) > now) : EMPTY_LIST, [hasCurrentUserData, wants, now])
+  const visibleOwns = useMemo(() => hasCurrentUserData ? owns.filter((item) => !item.expiresAt || Date.parse(item.expiresAt) > now) : EMPTY_LIST, [hasCurrentUserData, owns, now])
   const visibleLoading = Boolean(user) && (!isCurrentRequest || loading)
   const visibleLoadError = isCurrentRequest ? loadError : ""
 
   const value = useMemo(
     () => ({
+      now,
+      membership: hasCurrentUserData ? membership : user?.membership,
       wants: visibleWants,
       owns: visibleOwns,
       loading: visibleLoading,
@@ -85,8 +104,9 @@ export function WardrobeDataProvider({ children }) {
       loadError: visibleLoadError,
       reload: () => setRevision((current) => current + 1),
       createWant: (payload) => runMutation(async () => {
-        const { want } = await apiRequest("/wants", { method: "POST", body: payload })
-        setWants((current) => [want, ...current])
+        const { want, membership: updatedMembership } = await saveItem(user.id, "/wants", payload)
+        setMembership(updatedMembership)
+        setWants((current) => [want, ...current.filter((item) => item.id !== want.id)])
         return want
       }),
       updateWant: (id, payload) => runMutation(async () => {
@@ -106,8 +126,9 @@ export function WardrobeDataProvider({ children }) {
         return result.want
       }),
       createOwn: (payload) => runMutation(async () => {
-        const { own } = await apiRequest("/owns", { method: "POST", body: payload })
-        setOwns((current) => [own, ...current])
+        const { own, membership: updatedMembership } = await saveItem(user.id, "/owns", payload)
+        setMembership(updatedMembership)
+        setOwns((current) => [own, ...current.filter((item) => item.id !== own.id)])
         return own
       }),
       updateOwn: (id, payload) => runMutation(async () => {
@@ -124,7 +145,7 @@ export function WardrobeDataProvider({ children }) {
         }
       }),
     }),
-    [visibleWants, visibleOwns, visibleLoading, saving, visibleLoadError, runMutation],
+    [visibleWants, visibleOwns, visibleLoading, saving, visibleLoadError, runMutation, membership, hasCurrentUserData, user, saveItem, now],
   )
 
   return <WardrobeDataContext.Provider value={value}>{children}</WardrobeDataContext.Provider>

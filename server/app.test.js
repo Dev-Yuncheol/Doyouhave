@@ -191,6 +191,7 @@ describe("authentication API", () => {
       email: currentUser.email,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
+      membership: { plan: "FREE", trialSaveCount: 0, saveLimit: 50, savesRemaining: 50, retentionDays: 30, canSave: true },
     })
   })
 

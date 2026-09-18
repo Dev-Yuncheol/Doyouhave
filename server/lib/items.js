@@ -179,6 +179,7 @@ export function serializeWant(want) {
     userId: want.userId,
     createdAt: want.createdAt,
     updatedAt: want.updatedAt,
+    expiresAt: want.expiresAt ?? null,
   }
 }
 
@@ -198,6 +199,7 @@ export function serializeOwn(own) {
     userId: own.userId,
     createdAt: own.createdAt,
     updatedAt: own.updatedAt,
+    expiresAt: own.expiresAt ?? null,
   }
 }
 

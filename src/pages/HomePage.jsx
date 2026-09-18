@@ -9,8 +9,11 @@ import { FilterChips } from "@/components/FilterChips"
 import { WantCard } from "@/components/WantCard"
 import { useOwns } from "@/hooks/useOwns"
 import { useWants } from "@/hooks/useWants"
+import { MembershipStatus } from "@/components/MembershipStatus"
+import { useWardrobeData } from "@/hooks/useWardrobeData"
 
 export function HomePage() {
+  const { membership } = useWardrobeData()
   const [status, setStatus] = useState("pending")
   const [category, setCategory] = useState("")
   const { wants: statusWants, loading, loadError, reload } = useWants({ status })
@@ -28,6 +31,7 @@ export function HomePage() {
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pt-4">
           <h1 className="text-2xl font-semibold leading-[1.3]">살까</h1>
+          <MembershipStatus />
 
           <Tabs value={status} onValueChange={setStatus}>
             <TabsList variant="line" className="h-auto w-full justify-start gap-1 rounded-none bg-transparent p-0">
@@ -83,9 +87,9 @@ export function HomePage() {
             paddingBottom: "calc(12px + env(safe-area-inset-bottom))",
           }}
         >
-          <Button className="h-10 w-full" asChild>
+          {membership?.canSave === false ? <Button className="h-10 w-full" disabled>체험 저장 50회 소진</Button> : <Button className="h-10 w-full" asChild>
             <Link to="/wants/new">후보 추가</Link>
-          </Button>
+          </Button>}
         </div>
       </div>
     </div>

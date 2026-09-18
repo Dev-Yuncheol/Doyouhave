@@ -6,6 +6,7 @@ import { ColorSwatch } from "@/components/ColorSwatch"
 import { StatusBadge } from "@/components/StatusBadge"
 import { categoryLabel, colorLabel } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { RetentionLabel } from "@/components/MembershipStatus"
 
 function formatPrice(price) {
   if (price == null || price === "") return null
@@ -46,6 +47,7 @@ export function WantCard({ want, hasSimilar }) {
               )}
               <StatusBadge status={want.status} />
             </div>
+            <RetentionLabel expiresAt={want.expiresAt} />
           </div>
         </CardContent>
       </Card>
@@ -116,6 +118,7 @@ export function OwnCard({ own, onLongPress }) {
             {" · "}
             {own.source === "bought" ? "샀을 때" : "직접 적음"}
           </p>
+          <RetentionLabel expiresAt={own.expiresAt} />
         </div>
       </CardContent>
     </Card>
