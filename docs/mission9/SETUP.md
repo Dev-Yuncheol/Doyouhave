@@ -1,6 +1,6 @@
 # 미션 9 분석 설정과 제출 절차
 
-있니의 유입과 핵심 행동을 측정하는 구현이다. 2026-10-01 현재 Amplitude, GA4, GTM 계정은 미생성이다. 코드는 기본적으로 외부 분석 전송을 하지 않는다. 실제 서비스 수신 화면과 홍보 게시 증빙은 계정 설정·배포·게시 후 채워야 한다.
+있니의 유입과 핵심 행동을 측정하는 구현이다. 2026-10-01 사용자가 Amplitude API Key 발급과 GA4·GTM 생성 완료를 확인했다. GA4 측정 ID는 `G-PZMLDQKR5P`, GTM 컨테이너 ID는 `GTM-TTN868HT`다. 로컬 `.env`에 Amplitude API Key와 Google ID를 입력하고 수집을 활성화했다. Amplitude 리전은 아직 별도 확인을 받지 않아 기존 US 기본값을 유지한다. GTM 태그 설정·게시와 실제 수신은 미검증이다. 실제 서비스 수신 화면과 홍보 게시 증빙은 설정·배포·게시 후 채워야 한다.
 
 ## 1. 준비할 값
 
@@ -14,16 +14,16 @@
 
 ## 2. 환경변수
 
-`.env.example`의 분석 항목을 개발 환경 또는 배포 환경에 추가하고 빌드를 다시 실행한다. 프로젝트가 없는 현재는 아래 값을 유지한다.
+`.env.example`의 분석 항목을 개발 환경 또는 배포 환경에 추가하고 빌드를 다시 실행한다. 현재 로컬 설정은 아래와 같다. 로컬 `.env`는 Git에 포함되지 않으며 Vercel 환경변수에 자동으로 반영되지 않는다.
 
 ```dotenv
-VITE_ANALYTICS_ENABLED=false
+VITE_ANALYTICS_ENABLED=true
 VITE_ANALYTICS_DEBUG=false
 VITE_ANALYTICS_ENV=development
-VITE_AMPLITUDE_API_KEY=
+VITE_AMPLITUDE_API_KEY=발급받은_프로젝트_API_Key
 VITE_AMPLITUDE_SERVER_ZONE=US
-VITE_GA4_MEASUREMENT_ID=
-VITE_GTM_CONTAINER_ID=
+VITE_GA4_MEASUREMENT_ID=G-PZMLDQKR5P
+VITE_GTM_CONTAINER_ID=GTM-TTN868HT
 ```
 
 실제 수집 준비가 되면 `ENABLED=true`, 운영은 `ENV=production`, 검증은 `ENV=qa`로 지정한다. `DEBUG=true`는 로컬 확인용 이벤트를 `window.__inniAnalyticsEvents`에 최대 200개 보관하며 GA4 이벤트에 debug_mode를 붙인다. 운영 배포는 DEBUG=false를 사용한다.
@@ -32,7 +32,7 @@ GTM ID가 있으면 GA4는 GTM에서만 전송한다. GTM ID가 없고 GA4 ID만
 
 ## 3. GTM 설정
 
-1. 컨테이너에 Google 태그를 추가한다. 태그 ID에 GA4 측정 ID를 입력한다. 초기화 트리거를 사용한다.
+1. `GTM-TTN868HT` 컨테이너에 Google 태그를 추가한다. 태그 ID에 `G-PZMLDQKR5P`를 입력한다. 초기화 트리거를 사용한다.
 2. 구성 매개변수 `send_page_view=false`, `allow_google_signals=false`를 설정한다. `page_location`은 `https://doyouhave.vercel.app/app`, `page_referrer`는 빈 문자열로 지정한다. 테스트 도메인에서는 해당 테스트 origin의 `/app`을 사용한다. 콜백의 인증 코드가 기본 URL에 포함되지 않게 한다.
 3. GA4 웹 스트림의 향상된 측정은 비활성화한다. 페이지 변경, 폼 입력, 링크 클릭 등은 본 Tracking Plan에서 명시한 이벤트만 수집한다. 특히 브라우저 기록 변경에 따른 자동 page_view를 함께 켜지 않는다.
 4. 데이터 영역 변수(버전 2) `inni_event_name`, `inni_user_id`를 만든다.
@@ -93,7 +93,11 @@ npm run build
 
 ## 7. 실제 수집과 제출 완료 조건
 
-- [ ] Amplitude 프로젝트·GA4 속성·GTM 컨테이너 생성
+- [x] Amplitude 프로젝트·GA4 속성·GTM 컨테이너 생성 (사용자 확인)
+- [x] 로컬 `.env`에 GA4·GTM ID 입력
+- [x] 로컬 `.env`에 Amplitude 프로젝트 API Key 입력
+- [ ] Amplitude US/EU 리전 확인 (현재 US 기본값)
+- [ ] GTM Google 태그·GA4 이벤트 태그·트리거 설정 및 게시
 - [ ] 테스트 키로 QA 환경 전송 확인
 - [ ] Amplitude 실제 수신 화면 또는 CSV 저장
 - [ ] GA4 DebugView 및 실시간 보고서 확인, 처리 후 유입 획득 보고서 확인
