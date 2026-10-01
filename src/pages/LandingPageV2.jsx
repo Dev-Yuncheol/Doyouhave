@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { APP_NAME } from "@/lib/constants"
+import { analytics } from "@/lib/analytics"
 import imgHero from "@/assets/1hero src.webp"
 import imgInput from "@/assets/2input src.webp"
 import imgFound from "@/assets/3foundhome src.webp"
@@ -14,10 +15,10 @@ import imgCta from "@/assets/6cta src.webp"
 
 const INPUT_STEPS = ["이름", "카테고리", "색"]
 
-function CtaBlock({ to, label }) {
+function CtaBlock({ to, label, location }) {
   return (
     <Button className="h-11 w-full rounded-xl text-[15px]" asChild>
-      <Link to={to}>{label}</Link>
+      <Link to={to} onClick={() => analytics.track("signup_cta_clicked", { cta_location: location })}>{label}</Link>
     </Button>
   )
 }
@@ -60,6 +61,7 @@ export function LandingPageV2() {
               도와드려요.
             </p>
             <CtaBlock
+              location="hero"
               to="/login?mode=signup"
               label="살까 싶은 옷 1개 넣어 보기"
             />
@@ -214,6 +216,7 @@ export function LandingPageV2() {
           <CtaBlock
             to="/login?mode=signup"
             label="무료로 확인하기"
+            location="membership"
           />
         </section>
 
@@ -239,6 +242,7 @@ export function LandingPageV2() {
           <CtaBlock
             to="/login?mode=signup"
             label="살까 싶은 옷 1개 넣어 보기"
+            location="footer"
           />
         </section>
       </div>

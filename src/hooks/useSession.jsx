@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import * as auth from "@/lib/auth"
+import { analytics, trackFailure } from "@/lib/analytics"
 import {
   clearLegacyStorage,
   getAccessToken,
@@ -16,7 +17,7 @@ export function SessionProvider({ children }) {
 
   useEffect(() => {
     clearLegacyStorage()
-    const unsubscribe = subscribeToUnauthorized(() => setUser(null))
+    const unsubscribe = subscribeToUnauthorized(() => { analytics.setUser(null); setUser(null) })
     const token = getAccessToken()
 
     if (!token) {
@@ -27,7 +28,11 @@ export function SessionProvider({ children }) {
     const controller = new AbortController()
     auth
       .getMe(controller.signal)
-      .then(({ user: restoredUser }) => setUser(restoredUser))
+      .then(({ user: restoredUser }) => {
+        if (controller.signal.aborted) return
+        analytics.setUser(restoredUser)
+        setUser(restoredUser)
+      })
       .catch((error) => {
         if (error.name !== "AbortError") setUser(null)
       })
@@ -49,6 +54,8 @@ export function SessionProvider({ children }) {
       isLoggedIn: Boolean(user),
       acceptSession(result) {
         saveAccessToken(result.token)
+        analytics.setUser(result.user)
+        analytics.track(result.isNewUser ? "signup_completed" : "login_completed", { auth_method: "google" }, result.isNewUser ? result.user.id : undefined)
         setUser(result.user)
       },
       async login(payload) {
@@ -56,8 +63,13 @@ export function SessionProvider({ children }) {
         try {
           const result = await auth.login(payload)
           saveAccessToken(result.token)
+          analytics.setUser(result.user)
+          analytics.track("login_completed", { auth_method: "email" })
           setUser(result.user)
           return result
+        } catch (error) {
+          trackFailure("login", error)
+          throw error
         } finally {
           setPending(false)
         }
@@ -67,14 +79,20 @@ export function SessionProvider({ children }) {
         try {
           const result = await auth.signUp(payload)
           saveAccessToken(result.token)
+          analytics.setUser(result.user)
+          analytics.track("signup_completed", { auth_method: "email" }, result.user.id)
           setUser(result.user)
           return result
+        } catch (error) {
+          trackFailure("signup", error)
+          throw error
         } finally {
           setPending(false)
         }
       },
       logout() {
         saveAccessToken(null)
+        analytics.setUser(null)
         setUser(null)
       },
     }),

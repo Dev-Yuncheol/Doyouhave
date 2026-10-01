@@ -24,6 +24,7 @@ describe("Google authentication bridge", () => {
     database.user.create.mockResolvedValue(user)
     const result = await post(app)
     expect(result.status).toBe(200)
+    expect(result.body.isNewUser).toBe(true)
     expect(verifyAccessToken(result.body.token, secret).sub).toBe(user.id)
     expect(database.user.create.mock.calls[0][0].data).toEqual({ email: identity.email, supabaseUserId: identity.id })
     expect(result.body.user).not.toHaveProperty("passwordHash")
@@ -31,7 +32,9 @@ describe("Google authentication bridge", () => {
   })
   it("finds an already linked user by stable identity even after email changes", async () => {
     database.user.findUnique.mockResolvedValue({ ...user, email: "old@example.com" })
-    expect((await post(app)).status).toBe(200)
+    const result = await post(app)
+    expect(result.status).toBe(200)
+    expect(result.body.isNewUser).toBe(false)
     expect(database.user.findUnique).toHaveBeenCalledWith({ where: { supabaseUserId: identity.id } })
     expect(database.user.create).not.toHaveBeenCalled()
   })
@@ -48,6 +51,7 @@ describe("Google authentication bridge", () => {
     const result = await post(app, { password: "correct-password" })
     expect(result.status).toBe(200)
     expect(result.body.user.id).toBe(user.id)
+    expect(result.body.isNewUser).toBe(false)
     expect(passwordService.compare).toHaveBeenCalledWith("correct-password", "hash")
     expect(database.user.updateMany).toHaveBeenCalledWith({ where: { id: user.id, supabaseUserId: null }, data: { supabaseUserId: identity.id } })
   })
@@ -74,7 +78,9 @@ describe("Google authentication bridge", () => {
   it("handles concurrent first Google logins", async () => {
     database.user.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(null).mockResolvedValueOnce(user)
     database.user.create.mockRejectedValue({ code: "P2002" })
-    expect((await post(app)).status).toBe(200)
+    const result = await post(app)
+    expect(result.status).toBe(200)
+    expect(result.body.isNewUser).toBe(false)
   })
   it("requires linking when a concurrent signup takes the email", async () => {
     database.user.findUnique.mockResolvedValue(null)

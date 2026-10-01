@@ -12,6 +12,7 @@ import { AuthCallbackPage } from "@/pages/AuthCallbackPage"
 import { NewWantPage } from "@/pages/NewWantPage"
 import { OwnsPage } from "@/pages/OwnsPage"
 import { WantDetailPage } from "@/pages/WantDetailPage"
+import { AnalyticsObserver } from "@/components/AnalyticsObserver"
 
 function RootPage() {
   const { isLoggedIn, restoring } = useSession()
@@ -24,6 +25,7 @@ export default function App() {
     <SessionProvider>
       <WardrobeDataProvider>
         <BrowserRouter>
+        <AnalyticsObserver />
         <div className="flex min-h-0 flex-1 flex-col">
           <Routes>
             <Route path="/" element={<RootPage />} />

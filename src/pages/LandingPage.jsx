@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { analytics } from "@/lib/analytics"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -179,7 +180,7 @@ export function LandingPage() {
         }}
       >
         <Button className="h-10 w-full" asChild>
-          <Link to="/login?mode=signup">살까 싶은 옷 1개 넣어 보기</Link>
+          <Link to="/login?mode=signup" onClick={() => analytics.track("signup_cta_clicked", { cta_location: "legacy_footer" })}>살까 싶은 옷 1개 넣어 보기</Link>
         </Button>
       </div>
     </div>

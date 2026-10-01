@@ -160,6 +160,9 @@ npx vercel deploy --prod
 | 파일 | 내용 |
 |---|---|
 | [FUNCTIONAL_SPEC.md](./FUNCTIONAL_SPEC.md) | 현재 구현 기준 기능명세서: 화면, 처리 규칙, API, 인수 확인 시나리오 |
+| [미션 9 분석 설정](./docs/mission9/SETUP.md) | Amplitude·GA4·GTM 설정, 이벤트 정의, 로컬 QA와 실제 수신 확인 |
+| [미션 9 제출 자료](./outputs/mission9) | 지표 정의서, Tracking Plan, 구현·로컬 QA 증빙 |
+| [미션 9 홍보 문구](./docs/mission9/PROMOTION.md) | 3개 채널별 문구와 UTM 링크, 미게시 상태 |
 | [PRD.md](./PRD.md) | 제품 범위, 흐름, 데이터 모델 |
 | [DESIGN.md](./DESIGN.md) | 디자인 원칙과 UI 토큰 |
 | [TASK.md](./TASK.md) | 구현 단계 |

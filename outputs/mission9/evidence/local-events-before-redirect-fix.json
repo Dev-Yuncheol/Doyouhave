@@ -1,0 +1,281 @@
+[
+  {
+    "id": "6c6992bc-d99f-4139-9581-907b26c87916",
+    "name": "page_viewed",
+    "properties": {
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "is_logged_in": false,
+      "page_name": "landing",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790832513694,
+    "userId": null
+  },
+  {
+    "id": "80b9408b-6c29-4807-b5b0-03fbeba1aaa6",
+    "name": "signup_cta_clicked",
+    "properties": {
+      "cta_location": "hero",
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790832572717,
+    "userId": null
+  },
+  {
+    "id": "615bb4e2-e6ff-44a2-bccd-da0ab939a695",
+    "name": "page_viewed",
+    "properties": {
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "is_logged_in": false,
+      "page_name": "login",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790832572737,
+    "userId": null
+  },
+  {
+    "id": "c93edcd0-ec0d-4f41-bd76-e287a553a5b2",
+    "name": "signup_completed",
+    "properties": {
+      "auth_method": "email",
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790832616870,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  },
+  {
+    "id": "15e67a3b-2e3e-4a15-bc5d-e603a2787698",
+    "name": "page_viewed",
+    "properties": {
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "is_logged_in": true,
+      "page_name": "login",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790832616872,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  },
+  {
+    "id": "75538ef2-c65a-45e5-9afc-be829ba6f43e",
+    "name": "page_viewed",
+    "properties": {
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "is_logged_in": true,
+      "page_name": "home",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790832616889,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  },
+  {
+    "id": "6bf44bd2-dcd5-4fbf-98d5-24168e8b17c1",
+    "name": "page_viewed",
+    "properties": {
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "is_logged_in": true,
+      "page_name": "want_form",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790832724616,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  },
+  {
+    "id": "93ce0e39-56e7-4418-9a49-f374a27e9bd0",
+    "name": "want_form_viewed",
+    "properties": {
+      "entry_point": "want_form",
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790832724616,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  },
+  {
+    "id": "924166f3-5619-4116-8b61-5f15fb1b6e13",
+    "name": "want_created",
+    "properties": {
+      "category": "top",
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao",
+      "want_id": "78b9d516-c5d9-42a6-9e3e-9a5960f45519"
+    },
+    "timestamp": 1790832930272,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  },
+  {
+    "id": "81a1fc27-27ad-4bd0-b9a0-738d3d95be5f",
+    "name": "page_viewed",
+    "properties": {
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "is_logged_in": true,
+      "page_name": "want_detail",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790832930312,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  },
+  {
+    "id": "daacbc1d-f26d-4e81-b7ee-95391ac27908",
+    "name": "comparison_viewed",
+    "properties": {
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "own_count": 0,
+      "schema_version": 1,
+      "similar_count": 0,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao",
+      "want_id": "78b9d516-c5d9-42a6-9e3e-9a5960f45519"
+    },
+    "timestamp": 1790832930312,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  },
+  {
+    "id": "e74d78ef-4707-4099-96a6-1d4f091d989c",
+    "name": "own_created",
+    "properties": {
+      "category": "top",
+      "entry_point": "want_detail",
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790833028300,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  },
+  {
+    "id": "90042f99-80cf-4ea8-adbe-e64e3db68665",
+    "name": "decision_recorded",
+    "properties": {
+      "decision": "bought",
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "schema_version": 1,
+      "similar_count": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao",
+      "want_id": "78b9d516-c5d9-42a6-9e3e-9a5960f45519"
+    },
+    "timestamp": 1790833059814,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  },
+  {
+    "id": "3aef1d28-90fc-45f2-9550-43cebc567634",
+    "name": "page_viewed",
+    "properties": {
+      "environment": "qa",
+      "first_utm_campaign": "mission9_launch",
+      "first_utm_content": "intro_text_a",
+      "first_utm_medium": "messenger",
+      "first_utm_source": "kakao",
+      "is_logged_in": true,
+      "page_name": "home",
+      "schema_version": 1,
+      "utm_campaign": "mission9_launch",
+      "utm_content": "intro_text_a",
+      "utm_medium": "messenger",
+      "utm_source": "kakao"
+    },
+    "timestamp": 1790833059836,
+    "userId": "801671da-61ce-465e-8a07-154353e93d4d"
+  }
+]

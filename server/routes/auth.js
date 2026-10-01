@@ -128,6 +128,7 @@ export function createAuthRouter({
     const identity = await googleTokenVerifier(accessToken)
     const where = { supabaseUserId: identity.id }
     let user = await database.user.findUnique({ where })
+    let isNewUser = false
     if (!user) {
       const existing = await database.user.findUnique({ where: { email: identity.email } })
       if (existing) {
@@ -152,6 +153,7 @@ export function createAuthRouter({
             data: { email: identity.email, supabaseUserId: identity.id },
             select: publicUserSelect,
           })
+          isNewUser = true
         } catch (error) {
           if (error?.code !== "P2002") throw error
           user = await database.user.findUnique({ where })
@@ -159,7 +161,7 @@ export function createAuthRouter({
         }
       }
     }
-    response.json(authResponse(user, jwtSecret))
+    response.json({ ...authResponse(user, jwtSecret), isNewUser })
   })
 
   router.get("/me", authenticate, (request, response) => {

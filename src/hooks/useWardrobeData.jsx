@@ -9,6 +9,8 @@ import { useSession } from "@/hooks/useSession"
 import { WardrobeDataContext } from "@/hooks/wardrobe-data-context"
 import { apiRequest, fetchCollection } from "@/lib/api"
 import { createItemSaver } from "@/lib/save-item"
+import { analytics, trackFailure } from "@/lib/analytics"
+import { findSimilarOwns } from "@/lib/match"
 
 const SAVE_ERROR = "저장하지 못했습니다. 다시 시도해 주세요."
 const EMPTY_LIST = []
@@ -73,18 +75,19 @@ export function WardrobeDataProvider({ children }) {
     return () => controller.abort()
   }, [user, revision])
 
-  const runMutation = useCallback(async (action) => {
+  const runMutation = useCallback(async (action, actionName = "wardrobe_mutation") => {
     setSaving(true)
     try {
       return await action()
     } catch (error) {
+      trackFailure(actionName, error, user?.id)
       toast.error(error.message || SAVE_ERROR)
       if (error.code === "TRIAL_SAVE_LIMIT_REACHED") setRevision((current) => current + 1)
       throw error
     } finally {
       setSaving(false)
     }
-  }, [])
+  }, [user?.id])
 
   const hasCurrentUserData = Boolean(user) && dataUserId === user.id
   const isCurrentRequest = Boolean(user) && requestUserId === user.id
@@ -107,13 +110,17 @@ export function WardrobeDataProvider({ children }) {
         const { want, membership: updatedMembership } = await saveItem(user.id, "/wants", payload)
         setMembership(updatedMembership)
         setWants((current) => [want, ...current.filter((item) => item.id !== want.id)])
+        analytics.track("want_created", { want_id: want.id, category: want.category }, want.id, user.id)
         return want
-      }),
+      }, "want_create"),
       updateWant: (id, payload) => runMutation(async () => {
         const { want } = await apiRequest(`/wants/${id}`, { method: "PATCH", body: payload })
         setWants((current) => current.map((item) => item.id === id ? want : item))
+        if (payload.status === "skipped" && visibleWants.find((item) => item.id === id)?.status === "pending") {
+          analytics.track("decision_recorded", { want_id: id, decision: "skipped", similar_count: findSimilarOwns(visibleOwns, want).length }, `${id}:skipped`, user.id)
+        }
         return want
-      }),
+      }, "want_update"),
       deleteWant: (id) => runMutation(async () => {
         await apiRequest(`/wants/${id}`, { method: "DELETE" })
         setWants((current) => current.filter((item) => item.id !== id))
@@ -123,14 +130,18 @@ export function WardrobeDataProvider({ children }) {
         setWants((current) => current.map((item) => item.id === id ? result.want : item))
         setOwns((current) => [result.own, ...current.filter((item) => item.id !== result.own.id)])
         toast.success(result.created ? "보유 의류에 담았어요" : "이미 담겨 있어요")
+        if (result.created) analytics.track("decision_recorded", {
+          want_id: id, decision: "bought", similar_count: findSimilarOwns(visibleOwns, result.want).length,
+        }, `${id}:bought`, user.id)
         return result.want
-      }),
+      }, "want_buy"),
       createOwn: (payload) => runMutation(async () => {
         const { own, membership: updatedMembership } = await saveItem(user.id, "/owns", payload)
         setMembership(updatedMembership)
         setOwns((current) => [own, ...current.filter((item) => item.id !== own.id)])
+        analytics.track("own_created", { category: own.category, entry_point: "want_detail" }, own.id, user.id)
         return own
-      }),
+      }, "own_create"),
       updateOwn: (id, payload) => runMutation(async () => {
         const { own } = await apiRequest(`/owns/${id}`, { method: "PATCH", body: payload })
         setOwns((current) => current.map((item) => item.id === id ? own : item))

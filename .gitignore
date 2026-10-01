@@ -27,3 +27,6 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Local artifact renderers and QA intermediates
+tmp/

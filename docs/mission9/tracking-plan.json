@@ -1,0 +1,417 @@
+{
+  "date": "2026-10-01",
+  "title": "있니 미션 9-1 Tracking Plan",
+  "events": [
+    [
+      "page_viewed",
+      "방문·화면 조회",
+      "인증 복원 후 실제 화면 진입",
+      "page_name:string, is_logged_in:boolean",
+      "landing / false",
+      "경로 변경당 1회. StrictMode 재실행 제외",
+      "src/components/AnalyticsObserver.jsx",
+      "Amplitude / GA4(page_view)"
+    ],
+    [
+      "signup_cta_clicked",
+      "가입 유도 위치 비교",
+      "소개 페이지 가입 링크 클릭",
+      "cta_location:string",
+      "hero / membership / footer / legacy_footer",
+      "클릭당 1회",
+      "src/pages/LandingPageV2.jsx, LandingPage.jsx",
+      "Amplitude / GA4"
+    ],
+    [
+      "signup_completed",
+      "가입 전환",
+      "신규 계정 생성 및 토큰 저장 성공",
+      "auth_method:string",
+      "email / google",
+      "신규 사용자 ID당 1회. 기존 계정 연결 제외",
+      "src/hooks/useSession.jsx",
+      "Amplitude / GA4"
+    ],
+    [
+      "login_completed",
+      "기존 사용자 식별",
+      "기존 계정 로그인 성공",
+      "auth_method:string",
+      "email / google",
+      "성공당 1회. 세션 복원 제외",
+      "src/hooks/useSession.jsx",
+      "Amplitude / GA4"
+    ],
+    [
+      "want_form_viewed",
+      "후보 작성 진입·이탈",
+      "보호된 후보 작성 화면 진입",
+      "entry_point:string",
+      "want_form",
+      "화면 진입당 1회. 폼 작성 완료 의미 아님",
+      "src/components/AnalyticsObserver.jsx",
+      "Amplitude / GA4"
+    ],
+    [
+      "want_created",
+      "첫 후보 등록",
+      "POST /wants 성공",
+      "want_id:string, category:string",
+      "UUID / top",
+      "후보 ID당 1회. 실패 제외",
+      "src/hooks/useWardrobeData.jsx",
+      "Amplitude / GA4(want_id 제외)"
+    ],
+    [
+      "comparison_viewed",
+      "비교 결과 표시",
+      "상세 화면 데이터 로딩 성공 후 표시",
+      "want_id:string, similar_count:number, own_count:number",
+      "UUID / 0 / 0",
+      "상세 진입당 1회. 0개도 포함. 현재 화면 추가 등록은 재집계 안 함",
+      "src/pages/WantDetailPage.jsx",
+      "Amplitude / GA4(want_id 제외)"
+    ],
+    [
+      "own_created",
+      "직접 보유 의류 등록",
+      "POST /owns 성공",
+      "category:string, entry_point:string",
+      "top / want_detail",
+      "보유 ID당 1회. 구매로 자동 생성된 Own 제외",
+      "src/hooks/useWardrobeData.jsx",
+      "Amplitude / GA4"
+    ],
+    [
+      "decision_recorded",
+      "구매 판단 완료",
+      "새 구매 전환 또는 pending→skipped API 성공",
+      "want_id:string, decision:string, similar_count:number",
+      "UUID / bought 또는 skipped / 1",
+      "후보+결정당 1회. 결정 직전 유사 의류 수",
+      "src/hooks/useWardrobeData.jsx",
+      "Amplitude / GA4(want_id 제외)"
+    ],
+    [
+      "action_failed",
+      "전환 저해 오류",
+      "가입·로그인·구글 인증·옷장 변경 요청 실패",
+      "action:string, error_code:string",
+      "want_create / TRIAL_SAVE_LIMIT_REACHED",
+      "실패 시도당 1회. 메시지·원문 입력 제외",
+      "src/hooks/useSession.jsx, useWardrobeData.jsx, src/pages/AuthCallbackPage.jsx",
+      "Amplitude / GA4"
+    ]
+  ],
+  "properties": [
+    [
+      "event_id / insert_id",
+      "이벤트",
+      "string",
+      "무작위 UUID",
+      "전송 재시도 식별",
+      "GA4 event_id / Amplitude insert_id"
+    ],
+    [
+      "user_id",
+      "식별",
+      "string 또는 null",
+      "내부 사용자 UUID",
+      "익명→가입 연결. 이메일 사용 금지",
+      "Amplitude / GA4"
+    ],
+    [
+      "environment",
+      "공통",
+      "string",
+      "qa / production",
+      "테스트 데이터 제외",
+      "Amplitude / GA4"
+    ],
+    [
+      "schema_version",
+      "공통",
+      "number",
+      "1",
+      "로그 계약 버전",
+      "Amplitude / GA4"
+    ],
+    [
+      "utm_source, utm_medium",
+      "유입",
+      "string",
+      "kakao / messenger",
+      "현재 유입. 명시적 새 UTM 또는 30분 비활동 시 갱신",
+      "Amplitude / GA4 표준 캠페인 필드"
+    ],
+    [
+      "utm_campaign, utm_content, utm_term",
+      "유입",
+      "string",
+      "mission9_launch / intro_text_a",
+      "허용 문자 영문·숫자·밑줄·하이픈, 최대 80자",
+      "Amplitude / GA4 표준 캠페인 필드"
+    ],
+    [
+      "first_utm_*",
+      "유입",
+      "string",
+      "kakao",
+      "브라우저 최초 유입. 계정 전환 초기화",
+      "Amplitude 이벤트 / 사용자 setOnce"
+    ],
+    [
+      "membership_plan",
+      "사용자",
+      "string",
+      "FREE / PAID",
+      "인증·세션 복원 시 설정. 결제·매출로 해석 금지",
+      "Amplitude 사용자 속성"
+    ],
+    [
+      "page_name",
+      "이벤트",
+      "string",
+      "landing, landing_v1, login, home, want_form, want_detail, owns",
+      "정규화한 화면명. 콜백·알 수 없는 URL 제외",
+      "Amplitude / GA4"
+    ],
+    [
+      "want_id",
+      "이벤트",
+      "string",
+      "내부 후보 UUID",
+      "동일 후보 기준 퍼널 조인",
+      "Amplitude만"
+    ],
+    [
+      "similar_count / own_count",
+      "이벤트",
+      "number",
+      "0 이상 정수",
+      "빈 옷장과 실제 유사 의류 없음 구분",
+      "Amplitude / GA4"
+    ],
+    [
+      "is_logged_in",
+      "이벤트",
+      "boolean",
+      "true / false",
+      "공개 방문과 회원 화면 구분",
+      "Amplitude / GA4"
+    ],
+    [
+      "auth_method",
+      "이벤트",
+      "string",
+      "email / google",
+      "가입 및 로그인 방식. 사용자 속성 아님",
+      "Amplitude / GA4"
+    ],
+    [
+      "수집 제외",
+      "보호",
+      "해당 없음",
+      "이메일, 비밀번호, 토큰, 제목, 메모, 상품 URL",
+      "자유 입력 값과 원본 URL을 전송하지 않음",
+      "전송 안 함"
+    ]
+  ],
+  "qa": [
+    [
+      "QA01",
+      "이메일 가입",
+      "UTM 링크 → CTA → 가입",
+      "가입 1회, 최초·현재 유입 유지",
+      "로컬 브라우저 확인",
+      "외부 미검증"
+    ],
+    [
+      "QA02",
+      "구글 신규·기존·연결·경합",
+      "서버 인증 분류 테스트",
+      "신규 생성만 isNewUser=true",
+      "서버 테스트 통과",
+      "실제 OAuth 미검증"
+    ],
+    [
+      "QA03",
+      "저장 중복",
+      "동일 ID 성공 콜백 반복·재로드",
+      "want_created 1회",
+      "단위 테스트 통과",
+      "외부 미검증"
+    ],
+    [
+      "QA04",
+      "저장 실패",
+      "API 오류 반환",
+      "성공 이벤트 없음, action_failed 발생",
+      "로컬 검증 예정",
+      "외부 미검증"
+    ],
+    [
+      "QA05",
+      "비교 0개",
+      "빈 옷장 후보 상세 진입",
+      "similar_count=0, own_count=0",
+      "로컬 브라우저 확인",
+      "외부 미검증"
+    ],
+    [
+      "QA06",
+      "비교 1개 이상",
+      "보유 추가 후 상세 재진입",
+      "비교 값과 화면 일치",
+      "화면 1개 확인, 재진입 미검증",
+      "외부 미검증"
+    ],
+    [
+      "QA07",
+      "샀다",
+      "후보를 구매 완료로 변경",
+      "decision=bought, 자동 Own은 own_created 제외",
+      "로컬 브라우저 확인",
+      "외부 미검증"
+    ],
+    [
+      "QA08",
+      "안 샀다",
+      "후보를 건너뛰기로 변경",
+      "decision=skipped",
+      "미검증",
+      "외부 미검증"
+    ],
+    [
+      "QA09",
+      "사용자 전환",
+      "로그아웃 → 다른 계정 로그인",
+      "사용자 분리, 이전 계정의 늦은 성공 이벤트 제외",
+      "단위 테스트 통과",
+      "외부 미검증"
+    ],
+    [
+      "QA10",
+      "StrictMode·재진입",
+      "최초 로드 / 화면 재진입",
+      "중복 효과 제외, 의도적 재진입은 집계",
+      "최초 1회 확인, 수정 후 단위 검증",
+      "외부 미검증"
+    ],
+    [
+      "QA11",
+      "전송·저장소 실패",
+      "저장소 차단·전송 함수 예외",
+      "서비스 기능 유지",
+      "단위 테스트 통과",
+      "외부 미검증"
+    ],
+    [
+      "QA12",
+      "UTM 변경·만료",
+      "OAuth 복귀 / 새 UTM / 31분 경과",
+      "복귀 유지, 새 캠페인 갱신, 비활동 후 direct",
+      "단위 테스트 통과",
+      "외부 미검증"
+    ],
+    [
+      "QA13",
+      "GTM 단일 전송",
+      "GTM+GA4 ID를 동시에 설정",
+      "직접 Google 태그 로드 없음",
+      "단위 테스트 통과",
+      "계정 미생성"
+    ],
+    [
+      "QA14",
+      "Amplitude 수신",
+      "실제 프로젝트 이벤트 확인",
+      "이벤트·속성·사용자 타임라인 일치",
+      "계정 미생성",
+      "미완료"
+    ],
+    [
+      "QA15",
+      "GA4 수신",
+      "DebugView → 실시간 → 유입 획득",
+      "page_view 중복 없음, 캠페인 구분",
+      "계정 미생성",
+      "미완료"
+    ],
+    [
+      "QA16",
+      "3개 채널 게시",
+      "실제 게시 URL·날짜·스크린샷 저장",
+      "UTM별 실제 유입 확인",
+      "문구·링크 준비",
+      "미게시"
+    ]
+  ],
+  "utm": [
+    [
+      "카카오톡",
+      "kakao",
+      "messenger",
+      "mission9_launch",
+      "intro_text_a",
+      "https://doyouhave.vercel.app/?utm_source=kakao&utm_medium=messenger&utm_campaign=mission9_launch&utm_content=intro_text_a",
+      "",
+      "",
+      "미게시"
+    ],
+    [
+      "네이버 블로그",
+      "naver_blog",
+      "social",
+      "mission9_launch",
+      "wardrobe_story_a",
+      "https://doyouhave.vercel.app/?utm_source=naver_blog&utm_medium=social&utm_campaign=mission9_launch&utm_content=wardrobe_story_a",
+      "",
+      "",
+      "미게시"
+    ],
+    [
+      "인스타그램",
+      "instagram",
+      "social",
+      "mission9_launch",
+      "closet_text_a",
+      "https://doyouhave.vercel.app/?utm_source=instagram&utm_medium=social&utm_campaign=mission9_launch&utm_content=closet_text_a",
+      "",
+      "",
+      "미게시"
+    ]
+  ],
+  "metrics": [
+    [
+      "방문자 수",
+      "기간 중 page_viewed가 있는 고유 사용자 수",
+      "단위: 사용자. Amplitude 기준 익명 식별자와 로그인 ID 연결 후 중복 제거. GA4 사용자 수는 별도 참고값.",
+      "채널별 도달 규모를 확인한다."
+    ],
+    [
+      "회원가입 전환율",
+      "신규 방문자 중 첫 방문 이후 7일 이내 signup_completed 사용자 수 / 신규 방문자 수 × 100",
+      "신규 방문자는 분석 설치 이후 첫 이벤트가 관측된 사람. 설치 이전 방문 여부와 다른 기기의 동일인은 확정할 수 없다. 7일 관찰 완료 집단으로 계산.",
+      "소개 페이지와 가입 과정 이탈을 확인한다."
+    ],
+    [
+      "첫 후보 등록률",
+      "신규 가입자 중 가입 이후 7일 이내 want_created 사용자 수 / 신규 가입자 수 × 100",
+      "가입 이벤트가 선행해야 한다. 한 사용자가 여러 후보를 등록해도 분자는 1명. 가입 후 7일 미경과 집단 별도 표시.",
+      "가입 이후 첫 사용 장벽을 확인한다."
+    ],
+    [
+      "첫 구매 판단 완료율",
+      "신규 가입자 중 가입 이후 7일 이내 후보 등록·비교 표시·결정을 순서대로 완료한 사용자 수 / 신규 가입자 수 × 100",
+      "핵심 지표. want_created → comparison_viewed → decision_recorded를 동일 want_id로 연결한다. 한 사용자에게 완료 후보가 하나 이상이면 1명으로 집계.",
+      "서비스의 핵심 가치에 도달하는 비율을 확인한다."
+    ],
+    [
+      "비교 후 결정 전환율",
+      "최초 comparison_viewed 이후 7일 이내 decision_recorded가 있는 고유 후보 수 / 비교가 표시된 고유 후보 수 × 100",
+      "단위: 후보. 동일 want_id·사용자·시간 순서 일치. 최초 비교 후 7일 미경과 후보는 관찰 중으로 분리. bought와 skipped 모두 완료.",
+      "비교 결과 이후 결정 단계의 이탈을 확인한다."
+    ]
+  ]
+}

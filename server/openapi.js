@@ -91,7 +91,12 @@ export const openApiDocument = {
           },
         }),
         responses: {
-          200: jsonResponse("로그인 완료", { $ref: "#/components/schemas/AuthResult" }),
+          200: jsonResponse("로그인 완료", { allOf: [
+            { $ref: "#/components/schemas/AuthResult" },
+            { type: "object", required: ["isNewUser"], properties: {
+              isNewUser: { type: "boolean", description: "이번 요청에서 신규 계정을 생성한 경우만 true. 기존 로그인·계정 연결·동시 가입 재조회는 false." },
+            } },
+          ] }),
           ...errorResponses,
           409: { description: "GOOGLE_LINK_REQUIRED: 비밀번호 확인 필요 / GOOGLE_LINK_CONFLICT: 다른 계정 연결됨" },
           429: { $ref: "#/components/responses/RateLimited" },

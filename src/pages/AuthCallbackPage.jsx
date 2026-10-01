@@ -6,6 +6,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { useSession } from "@/hooks/useSession"
 import { loginWithGoogle } from "@/lib/auth"
 import { clearGoogleSession, exchangeGoogleCallback } from "@/lib/google-auth"
+import { trackFailure } from "@/lib/analytics"
 
 export function AuthCallbackPage() {
   const { acceptSession } = useSession()
@@ -27,6 +28,7 @@ export function AuthCallbackPage() {
       await clearGoogleSession().catch(() => {})
       navigate("/", { replace: true })
     } catch (failure) {
+      trackFailure("google_login", failure)
       if (failure.code === "GOOGLE_LINK_REQUIRED") setLinkRequired(true)
       setError(failure.message || "로그인을 완료하지 못했습니다.")
     } finally {

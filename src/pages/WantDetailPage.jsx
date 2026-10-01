@@ -1,5 +1,6 @@
-import { useState } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { useEffect, useRef, useState } from "react"
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
+import { analytics } from "@/lib/analytics"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,10 +36,12 @@ function formatPrice(price) {
 export function WantDetailPage() {
   const { membership } = useWardrobeData()
   const { id } = useParams()
+  const location = useLocation()
+  const compared = useRef(null)
   const navigate = useNavigate()
   const { getWant, markBought, markSkipped, deleteWant, saving, loading, loadError, reload } =
     useWants()
-  const { similar, createOwn, saving: ownSaving } = useOwns()
+  const { owns, similar, createOwn, saving: ownSaving } = useOwns()
   const [ownTitle, setOwnTitle] = useState("")
   const [ownError, setOwnError] = useState("")
 
@@ -53,6 +56,14 @@ export function WantDetailPage() {
     : []
   const pending = want?.status === "pending"
   const busy = saving || ownSaving
+
+  useEffect(() => {
+    if (loading || loadError || !want) return
+    const signature = `${location.key}:${want.id}`
+    if (compared.current === signature) return
+    compared.current = signature
+    analytics.track("comparison_viewed", { want_id: want.id, similar_count: similarOwns.length, own_count: owns.length })
+  }, [loading, loadError, want, location.key, similarOwns.length, owns.length])
 
   if (loading || loadError) {
     return (
