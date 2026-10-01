@@ -1,0 +1,308 @@
+- banner:
+  - generic: 애널리틱스
+  - button "범용 선택 도구 열기":
+    - generic: 모든 계정
+    - img: chevron_right
+    - generic: doyouhave
+    - generic: doyouhave
+    - img: arrow_drop_down
+  - search:
+    - img: search
+    - textbox "검색":
+      - /placeholder: "\"광고와 연결\"을(를) 검색해 보세요"
+  - button "제품 전환":
+  - button "도움말 항목 메뉴":
+    - img: help
+  - button "사용자 계정 전환 도구 패널 열기"
+- navigation "주요 페이지":
+  - link "홈":
+    - generic: 홈
+  - link "보고서":
+    - img: insert_chart_filled
+    - generic: 보고서
+  - link "탐색":
+    - img: data_exploration
+    - generic: 탐색
+  - link "광고":
+    - img: ads_click
+    - generic: 광고
+- navigation "설정 페이지":
+  - link "작업":
+    - img: task_alt
+    - generic: 작업
+  - link "관리":
+    - img: settings_filled
+    - generic: 관리
+- navigation "보조 탐색":
+  - navigation "보조 페이지":
+    - button "만들기":
+      - text: 만들기
+      - img: arrow_drop_down
+  - tree:
+    - treeitem "보고서 개요" [level=1]:
+      - button "보고서 개요":
+        - generic: 보고서 개요
+    - treeitem "실시간 개요" [level=1]:
+      - button "실시간 개요":
+        - generic: 실시간 개요
+    - treeitem "실시간 페이지" [level=1]:
+      - button "실시간 페이지":
+        - generic: 실시간 페이지
+    - treeitem "데이터 가져오기" [expanded] [level=1]:
+      - separator
+      - button "데이터 가져오기":
+        - generic: 데이터 가져오기
+        - img: keyboard_arrow_up
+    - treeitem "캠페인 데이터 가져오기 검증" [level=2]:
+      - button "캠페인 데이터 가져오기 검증":
+        - generic: 캠페인 데이터 가져오기 검증
+    - treeitem "비즈니스 목표" [expanded] [level=1]:
+      - separator
+      - button "비즈니스 목표":
+        - generic: 비즈니스 목표
+        - img: keyboard_arrow_up
+    - treeitem "리드 생성" [level=2]:
+      - button "리드 생성":
+        - img: arrow_right
+        - generic: 리드 생성
+    - treeitem "판매 촉진" [level=2]:
+      - button "판매 촉진":
+        - img: arrow_right
+        - generic: 판매 촉진
+    - treeitem "웹 또는 앱 트래픽 파악" [level=2]:
+      - button "웹 또는 앱 트래픽 파악":
+        - img: arrow_right
+        - generic: 웹 또는 앱 트래픽 파악
+    - treeitem "사용자 참여 발생 시간 및 유지율 보기" [level=2]:
+      - button "사용자 참여 발생 시간 및 유지율 보기":
+        - img: arrow_right
+        - generic: 사용자 참여 발생 시간 및 유지율 보기
+    - treeitem "사용자" [expanded] [level=1]:
+      - separator
+      - button "사용자":
+        - generic: 사용자
+        - img: keyboard_arrow_up
+    - treeitem "사용자 속성" [level=2]:
+      - button "사용자 속성":
+        - img: arrow_right
+        - generic: 사용자 속성
+    - treeitem "기술" [level=2]:
+      - button "기술":
+        - img: arrow_right
+        - generic: 기술
+  - navigation "기타 페이지":
+    - button "라이브러리":
+      - img: folder
+      - generic: 라이브러리
+  - separator
+- button "탐색 전환" [expanded]:
+  - img: keyboard_arrow_left
+- main:
+  - button "모든 사용자":
+    - generic: 모
+    - generic: 모든 사용자
+  - button "비교 추가":
+    - generic: 비교 추가
+    - img: add
+  - separator
+  - heading "실시간 개요" [active] [level=1]:
+    - button "실시간 개요"
+  - button "이 보고서은(는) 사용 가능한 데이터를 100% 사용합니다. 자세한 내용을 보려면 클릭하세요.":
+    - img: check_circle
+    - generic: 이 보고서은(는) 사용 가능한 데이터를 100% 사용합니다. 자세한 내용을 보려면 클릭하세요.
+    - img: arrow_drop_down
+  - button "사용자 개요 보기":
+    - generic: 사용자 개요 보기
+  - generic "전체화면":
+    - button "전체화면":
+      - img: fullscreen
+  - generic "비교 수정":
+    - button "비교 수정":
+  - generic "이 보고서 공유":
+    - button "이 보고서 공유":
+      - img: share
+  - text: add check_circle arrow_drop_down fullscreen share
+  - button "지난 30분 동안의 활성 사용자"
+  - generic: "1"
+  - button "지난 5분 동안의 활성 사용자 수"
+  - generic: "1"
+  - generic: 분당 활성 사용자
+  - button "키보드 단축키"
+  - region "지도"
+  - iframe
+  - button "확대" [disabled]
+  - button "축소"
+  - button "키보드 단축키"
+  - generic: 지도 데이터 ©2026 TMap Mobility
+  - link "약관(새 탭에서 열기)":
+    - /url: https://www.google.com/intl/ko_KR/help/terms_maps.html
+    - text: 약관
+  - generic "첫 사용자 소스":
+    - combobox "측정기준":
+      - generic: 첫 사용자 소스
+  - text: 별
+  - generic "활성 사용자":
+    - button "활성 사용자"
+  - generic: "#1"
+  - generic: "-"
+  - generic: "-"
+  - table:
+    - row "첫 사용자 소스 활성 사용자":
+      - columnheader "첫 사용자 소스":
+        - button "첫 사용자 소스"
+      - columnheader "활성 사용자":
+        - button "활성 사용자"
+  - generic: 사용 가능한 데이터가 없습니다.
+  - table:
+    - row
+  - generic "잠재고객":
+    - button "잠재고객"
+  - text: 별
+  - generic "활성 사용자":
+    - combobox "측정항목":
+      - generic: 활성 사용자
+  - generic: "#1"
+  - generic: All Users
+  - generic: All Users
+  - generic: "1"
+  - generic: 100%
+  - table:
+    - row "잠재고객 활성 사용자":
+      - columnheader "잠재고객":
+        - button "잠재고객"
+      - columnheader "활성 사용자":
+        - button "활성 사용자"
+    - row "All Users 1":
+      - cell "All Users"
+      - cell "1"
+  - status: 1개 중 1~1번째
+  - button "이전 페이지" [disabled]:
+  - button "다음 페이지" [disabled]:
+  - table:
+    - row:
+      - columnheader
+    - row:
+      - cell
+  - generic "페이지 제목 및 화면 이름":
+    - button "페이지 제목 및 화면 이름"
+  - text: 별
+  - generic "조회수":
+    - button "조회수"
+  - generic: "#1"
+  - generic: 있니 | landing
+  - generic: 있니 | landing
+  - generic: "1"
+  - generic: 50%
+  - table:
+    - row "페이지 제목 및 화면 이름 조회수":
+      - columnheader "페이지 제목 및 화면 이름":
+        - button "페이지 제목 및 화면 이름"
+      - columnheader "조회수":
+        - button "조회수"
+    - row "있니 | landing 1":
+      - cell "있니 | landing"
+      - cell "1"
+    - row "있니 | login 1":
+      - cell "있니 | login"
+      - cell "1"
+  - status: 2개 중 1~2번째
+  - button "이전 페이지" [disabled]:
+  - button "다음 페이지" [disabled]:
+  - table:
+    - row:
+      - columnheader
+    - row:
+      - cell
+    - row:
+      - cell
+  - generic "이벤트 이름":
+    - button "이벤트 이름"
+  - text: 별
+  - generic "이벤트 수":
+    - button "이벤트 수"
+  - generic: "#1"
+  - generic: page_view
+  - generic: page_view
+  - generic: "2"
+  - generic: 40%
+  - table:
+    - row "이벤트 이름 이벤트 수":
+      - columnheader "이벤트 이름":
+        - button "이벤트 이름"
+      - columnheader "이벤트 수":
+        - button "이벤트 수"
+    - row "Press enter to drill down":
+      - cell "page_view"
+      - cell "2"
+    - row "Press enter to drill down":
+      - cell "first_visit"
+      - cell "1"
+    - row "Press enter to drill down":
+      - cell "session_start"
+      - cell "1"
+    - row "Press enter to drill down":
+      - cell "signup_cta_clicked"
+      - cell "1"
+  - status: 4개 중 1~4번째
+  - button "이전 페이지" [disabled]:
+  - button "다음 페이지" [disabled]:
+  - table:
+    - row:
+      - columnheader
+    - row:
+      - cell
+    - row:
+      - cell
+    - row:
+      - cell
+    - row:
+      - cell
+  - generic "이벤트 이름":
+    - button "이벤트 이름"
+  - text: 별
+  - generic "주요 이벤트":
+    - button "주요 이벤트"
+  - generic: "#1"
+  - generic: "-"
+  - generic: "-"
+  - table:
+    - row "이벤트 이름 주요 이벤트":
+      - columnheader "이벤트 이름":
+        - button "이벤트 이름"
+      - columnheader "주요 이벤트":
+        - button "주요 이벤트"
+  - generic: 사용 가능한 데이터가 없습니다.
+  - table:
+    - row
+  - generic "사용자 속성":
+    - button "사용자 속성"
+  - text: 별
+  - generic "활성 사용자":
+    - button "활성 사용자"
+  - generic: "#1"
+  - generic: "-"
+  - generic: "-"
+  - table:
+    - row "사용자 속성 활성 사용자":
+      - columnheader "사용자 속성":
+        - button "사용자 속성"
+      - columnheader "활성 사용자":
+        - button "활성 사용자"
+  - generic: 사용 가능한 데이터가 없습니다.
+  - table:
+    - row
+  - text: ©2026 Google |
+  - link "애널리틱스 홈":
+    - /url: https://www.google.com/analytics/?hl=ko
+  - text: "|"
+  - link "서비스 약관":
+    - /url: https://www.google.com/analytics/tos.html?hl=ko
+  - text: "|"
+  - link "개인정보처리방침":
+    - /url: https://www.google.com/policies/privacy/?hl=ko
+  - text: "|"
+  - button "의견 보내기":
+    - img: feedback
+    - generic: 의견 보내기
+- complementary
+- button "컨텍스트 메뉴 열기"

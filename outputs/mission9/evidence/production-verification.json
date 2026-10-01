@@ -1,0 +1,16 @@
+{
+  "url": "https://doyouhave.vercel.app",
+  "gtmConfigured": true,
+  "checkedAt": "2026-10-01T09:46:52.8897765+00:00",
+  "health": {
+    "status": "ok",
+    "database": "ok"
+  },
+  "gtmPublishedGa4": true,
+  "hasExplicitEvents": true,
+  "deploymentId": "dpl_7SiBae8UdVYwAsXoefhFNT13hNDf",
+  "codeCommit": "d798873",
+  "apiTitle": "있니 API",
+  "ga4Configured": true,
+  "bundlePath": "/assets/index-BecUANNQ.js"
+}

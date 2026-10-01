@@ -1,0 +1,1 @@
+{"checkedAt":"2026-10-01","region":"US","endpoint":"https://api2.amplitude.com/2/httpapi","status":"connection_failed","httpResponse":null,"result":"No ingestion acknowledgment. DNS lookup failed in terminal and browser SDK reported Failed to fetch. Amplitude project 870543 query returned no page_viewed event."}

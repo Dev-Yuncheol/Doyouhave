@@ -1,0 +1,122 @@
+[
+  {
+    "level": "warn",
+    "message": "Amplitude Logger [Warn]: {code: 0, error: \"Status 'failed' provided for 1 events\"}",
+    "timestamp": "2026-10-01T09:46:12.800Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Failed to fetch",
+    "timestamp": "2026-10-01T09:46:13.807Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "warn",
+    "message": "Amplitude Logger [Warn]: {code: 0, error: \"Status 'failed' provided for 1 events\"}",
+    "timestamp": "2026-10-01T09:46:13.807Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Failed to fetch",
+    "timestamp": "2026-10-01T09:46:15.826Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "warn",
+    "message": "Amplitude Logger [Warn]: {code: 0, error: \"Status 'failed' provided for 1 events\"}",
+    "timestamp": "2026-10-01T09:46:15.826Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Failed to fetch",
+    "timestamp": "2026-10-01T09:46:18.840Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "warn",
+    "message": "Amplitude Logger [Warn]: {code: 0, error: \"Status 'failed' provided for 1 events\"}",
+    "timestamp": "2026-10-01T09:46:18.841Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Event rejected due to exceeded retry count",
+    "timestamp": "2026-10-01T09:46:18.841Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Failed to fetch",
+    "timestamp": "2026-10-01T09:47:08.511Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "warn",
+    "message": "Amplitude Logger [Warn]: {code: 0, error: \"Status 'failed' provided for 2 events\"}",
+    "timestamp": "2026-10-01T09:47:08.511Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Failed to fetch",
+    "timestamp": "2026-10-01T09:47:09.519Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "warn",
+    "message": "Amplitude Logger [Warn]: {code: 0, error: \"Status 'failed' provided for 2 events\"}",
+    "timestamp": "2026-10-01T09:47:09.519Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Failed to fetch",
+    "timestamp": "2026-10-01T09:47:10.525Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "warn",
+    "message": "Amplitude Logger [Warn]: {code: 0, error: \"Status 'failed' provided for 2 events\"}",
+    "timestamp": "2026-10-01T09:47:10.526Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Failed to fetch",
+    "timestamp": "2026-10-01T09:47:12.530Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "warn",
+    "message": "Amplitude Logger [Warn]: {code: 0, error: \"Status 'failed' provided for 2 events\"}",
+    "timestamp": "2026-10-01T09:47:12.530Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Failed to fetch",
+    "timestamp": "2026-10-01T09:47:15.547Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "warn",
+    "message": "Amplitude Logger [Warn]: {code: 0, error: \"Status 'failed' provided for 2 events\"}",
+    "timestamp": "2026-10-01T09:47:15.547Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Event rejected due to exceeded retry count",
+    "timestamp": "2026-10-01T09:47:15.547Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  },
+  {
+    "level": "error",
+    "message": "Amplitude Logger [Error]: Event rejected due to exceeded retry count",
+    "timestamp": "2026-10-01T09:47:15.547Z",
+    "url": "https://doyouhave.vercel.app/assets/index-BecUANNQ.js"
+  }
+]

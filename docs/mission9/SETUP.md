@@ -1,6 +1,6 @@
 # 미션 9 분석 설정과 제출 절차
 
-있니의 유입과 핵심 행동을 측정하는 구현이다. 2026-10-01 사용자가 Amplitude API Key 및 US 리전, GA4·GTM 생성을 확인했다. GA4 측정 ID는 `G-PZMLDQKR5P`, GTM 컨테이너 ID는 `GTM-TTN868HT`다. 로컬 `.env`와 Vercel Production에 분석 설정 7개를 적용했다. GTM Google 태그는 버전 2로 게시했고 GA4 향상된 측정은 해제했다. 실제 서비스 수신과 홍보 게시 증빙은 별도 검증이 필요하다.
+있니의 유입과 핵심 행동을 측정하는 구현이다. 2026-10-01 사용자가 Amplitude API Key 및 US 리전, GA4·GTM 생성을 확인했다. GA4 측정 ID는 `G-PZMLDQKR5P`, GTM 컨테이너 ID는 `GTM-TTN868HT`다. 로컬 `.env`와 Vercel Production에 분석 설정 7개를 적용했다. GTM Google 태그는 버전 2로 게시했고 GA4 향상된 측정은 해제했다. 운영 배포 후 GA4 실시간 page_view 2건과 signup_cta_clicked 1건을 확인했다. Amplitude는 현재 네트워크에서 수집 서버 연결이 실패하여 실제 수신이 미확인이다. 3개 채널의 홍보는 미게시다.
 
 ## 1. 준비할 값
 
@@ -95,11 +95,14 @@ npm run build
 - [x] 로컬 `.env`에 GA4·GTM ID 입력
 - [x] 로컬 `.env`에 Amplitude 프로젝트 API Key 입력
 - [x] Amplitude US 리전 확인 (사용자 확인)
-- [ ] GTM Google 태그·GA4 이벤트 태그·트리거 설정 및 게시
+- [x] GTM Google 태그 설정 및 버전 2 게시 (이벤트는 앱 gtag 명령으로 전달)
+- [x] GA4 향상된 측정 해제
 - [ ] 테스트 키로 QA 환경 전송 확인
 - [ ] Amplitude 실제 수신 화면 또는 CSV 저장
 - [ ] GA4 DebugView 및 실시간 보고서 확인, 처리 후 유입 획득 보고서 확인
-- [ ] 운영 환경 키 설정·배포 후 주요 경로 재검증
+- [x] Vercel Production 환경 키 설정 및 운영 배포
+- [x] 운영 DB health·OpenAPI·배포 파일의 Google ID·GTM 게시 설정 확인
+- [ ] 운영 회원가입 이후 핵심 퍼널 전체 재검증
 - [ ] 카카오톡·네이버 블로그·인스타그램 중 사용 가능한 3개 채널에 게시
 - [ ] UTM 목록에 게시 URL·게시일·소재 버전 기록
 - [ ] 최소 7일 데이터 수집 후 9-2 분석 진행
