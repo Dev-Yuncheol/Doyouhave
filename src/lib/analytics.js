@@ -61,6 +61,9 @@ export const analytics = createAnalytics({ enabled, debug,
       push({ inni_parameters: null })
       push({ event: "inni_event", inni_event_name: name,
         inni_user_id: event.userId, inni_parameters: googlePayload(event) })
+      // GTM loads the Google tag; the app queues the explicit event command.
+      // Do not add a second GA4 event tag for inni_event in the container.
+      if (gaId) gtag("event", name, { ...googlePayload(event), send_to: gaId })
     })
     else if (gaId) safe(() => gtag("event", name, { ...googlePayload(event), send_to: gaId }))
   },

@@ -1,6 +1,6 @@
 # 미션 9 분석 설정과 제출 절차
 
-있니의 유입과 핵심 행동을 측정하는 구현이다. 2026-10-01 사용자가 Amplitude API Key 발급과 GA4·GTM 생성 완료를 확인했다. GA4 측정 ID는 `G-PZMLDQKR5P`, GTM 컨테이너 ID는 `GTM-TTN868HT`다. 로컬 `.env`에 Amplitude API Key와 Google ID를 입력하고 수집을 활성화했다. Amplitude 리전은 아직 별도 확인을 받지 않아 기존 US 기본값을 유지한다. GTM 태그 설정·게시와 실제 수신은 미검증이다. 실제 서비스 수신 화면과 홍보 게시 증빙은 설정·배포·게시 후 채워야 한다.
+있니의 유입과 핵심 행동을 측정하는 구현이다. 2026-10-01 사용자가 Amplitude API Key 및 US 리전, GA4·GTM 생성을 확인했다. GA4 측정 ID는 `G-PZMLDQKR5P`, GTM 컨테이너 ID는 `GTM-TTN868HT`다. 로컬 `.env`와 Vercel Production에 분석 설정 7개를 적용했다. GTM Google 태그는 버전 2로 게시했고 GA4 향상된 측정은 해제했다. 실제 서비스 수신과 홍보 게시 증빙은 별도 검증이 필요하다.
 
 ## 1. 준비할 값
 
@@ -28,17 +28,15 @@ VITE_GTM_CONTAINER_ID=GTM-TTN868HT
 
 실제 수집 준비가 되면 `ENABLED=true`, 운영은 `ENV=production`, 검증은 `ENV=qa`로 지정한다. `DEBUG=true`는 로컬 확인용 이벤트를 `window.__inniAnalyticsEvents`에 최대 200개 보관하며 GA4 이벤트에 debug_mode를 붙인다. 운영 배포는 DEBUG=false를 사용한다.
 
-GTM ID가 있으면 GA4는 GTM에서만 전송한다. GTM ID가 없고 GA4 ID만 있으면 코드가 Google 태그를 직접 로드한다. 둘을 동시에 직접 설치하지 않는다. 제출 시 GTM 설정 화면이 필요하므로 GTM 방식으로 마무리한다. Amplitude는 코드에서만 전송하며 GTM에서 다시 설치하지 않는다.
+GTM ID가 있으면 GTM의 Google 태그가 GA4 라이브러리를 로드하고, 앱이 같은 dataLayer에 명시적 gtag 이벤트 명령을 넣는다. GTM ID가 없고 GA4 ID만 있으면 코드가 Google 태그를 직접 로드한다. 라이브러리는 한 번만 로드한다. Amplitude는 코드에서만 전송하며 GTM에서 다시 설치하지 않는다.
 
 ## 3. GTM 설정
 
 1. `GTM-TTN868HT` 컨테이너에 Google 태그를 추가한다. 태그 ID에 `G-PZMLDQKR5P`를 입력한다. 초기화 트리거를 사용한다.
 2. 구성 매개변수 `send_page_view=false`, `allow_google_signals=false`를 설정한다. `page_location`은 `https://doyouhave.vercel.app/app`, `page_referrer`는 빈 문자열로 지정한다. 테스트 도메인에서는 해당 테스트 origin의 `/app`을 사용한다. 콜백의 인증 코드가 기본 URL에 포함되지 않게 한다.
 3. GA4 웹 스트림의 향상된 측정은 비활성화한다. 페이지 변경, 폼 입력, 링크 클릭 등은 본 Tracking Plan에서 명시한 이벤트만 수집한다. 특히 브라우저 기록 변경에 따른 자동 page_view를 함께 켜지 않는다.
-4. 데이터 영역 변수(버전 2) `inni_event_name`, `inni_user_id`를 만든다.
-5. 아래 목록에 대해 데이터 영역 변수 `inni_parameters.<이름>`을 각각 만든다.
-6. 사용자 지정 이벤트 트리거를 만든다. 이벤트 이름은 정확히 `inni_event`다.
-7. GA4 이벤트 태그를 만든다. 측정 ID는 같은 GA4 ID, 이벤트 이름은 `{{inni_event_name}}`, 트리거는 위 `inni_event`다. 아래 매개변수를 이름 그대로 연결한다. `user_id`는 `{{inni_user_id}}`로 연결하고 Google 태그의 사용자 ID 설정도 동일한 변수로 연결한다. 로그아웃 후 null이 전달되는지 Preview에서 확인한다.
+4. 앱이 `gtag("event", 이벤트명, 매개변수)` 명령을 같은 dataLayer에 넣으며 `send_to`에 GA4 측정 ID를 지정한다. 앱이 각 이벤트에 현재 `user_id`와 정규화한 페이지·유입 정보를 전달한다.
+5. `inni_event` 객체는 Preview와 QA에서 앱 이벤트를 확인하는 용도다. 여기에 별도 GA4 이벤트 태그를 연결하면 같은 이벤트가 중복되므로 추가하지 않는다. 사용자 지정 트리거와 데이터 영역 변수도 전송을 위해 추가할 필요가 없다.
 
 이벤트 매개변수 목록:
 
@@ -53,7 +51,7 @@ debug_mode
 
 GA4의 이벤트별 사용자 정의 매개변수 한도를 고려하여 실제 GA4 태그에는 유입용 핵심 매개변수만 연결한다: `page_name`, `is_logged_in`, `cta_location`, `auth_method`, `entry_point`, `category`, `similar_count`, `own_count`, `decision`, `action`, `error_code`, `environment`, `schema_version`, `event_id`와 표준 페이지·캠페인 필드. `want_id`와 `first_utm_*` 등 후보별 결합·최초 유입 분석은 Amplitude에서 수행한다. 사용자 정의 차원은 `environment`, `cta_location`, `decision` 등 실제 보고서에 쓰는 낮은 카디널리티 속성만 등록한다.
 
-8. Preview에서 한 페이지 진입당 page_view가 한 번인지, signup_completed가 신규 가입 때만 발생하는지 확인한다. 태그 게시 전 스크린샷을 저장하고 게시 후 다시 수신을 검증한다.
+6. Preview에서 한 페이지 진입당 page_view가 한 번인지, signup_completed가 신규 가입 때만 발생하는지 확인한다. 게시 화면을 저장하고 실제 수신을 검증한다.
 
 ## 4. Amplitude 설정
 
@@ -96,7 +94,7 @@ npm run build
 - [x] Amplitude 프로젝트·GA4 속성·GTM 컨테이너 생성 (사용자 확인)
 - [x] 로컬 `.env`에 GA4·GTM ID 입력
 - [x] 로컬 `.env`에 Amplitude 프로젝트 API Key 입력
-- [ ] Amplitude US/EU 리전 확인 (현재 US 기본값)
+- [x] Amplitude US 리전 확인 (사용자 확인)
 - [ ] GTM Google 태그·GA4 이벤트 태그·트리거 설정 및 게시
 - [ ] 테스트 키로 QA 환경 전송 확인
 - [ ] Amplitude 실제 수신 화면 또는 CSV 저장

@@ -26,6 +26,9 @@ describe("analytics provider routing", () => {
     const events = window.dataLayer.filter((entry) => entry.event === "inni_event")
     expect(events.map((entry) => entry.inni_event_name)).toEqual(["signup_completed", "page_view"])
     expect(window.dataLayer.filter((entry) => entry.inni_parameters === null)).toHaveLength(2)
+    const commands = window.dataLayer.filter((entry) => entry[0] === "event").map((entry) => Array.from(entry))
+    expect(commands.map((entry) => entry[1])).toEqual(["signup_completed", "page_view"])
+    expect(commands.every((entry) => entry[2].send_to === "G-TEST12345")).toBe(true)
     expect(JSON.stringify(window.dataLayer)).not.toMatch(/private-oauth-code|access_token/)
   })
   it("disables automatic pageviews and maps explicit page events in direct GA4 mode", async () => {
